@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   validate:
-    name: Lint, Typecheck & Static Export
+    name: Lint, Test & Static Export
     runs-on: ubuntu-latest
 
     steps:
@@ -40,6 +40,9 @@ jobs:
 
       - name: Run Workspace Linting
         run: pnpm lint
+
+      - name: Run Unit Tests
+        run: pnpm test
 
       - name: Run Build & Static Export
         run: pnpm build
