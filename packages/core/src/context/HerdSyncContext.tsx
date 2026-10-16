@@ -1,14 +1,7 @@
 "use client";
 
 // --- React ---
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 // --- Vendor ---
 import type PouchDB from "pouchdb-browser";
@@ -17,12 +10,7 @@ import type PouchDB from "pouchdb-browser";
 import { CouchDBAdapter } from "@/adapters/couchdb";
 
 // --- Types ---
-import {
-  CouchDBAdapterOptions,
-  HerdDoc,
-  HerdSyncStatus,
-  PouchDBCtor,
-} from "@/types";
+import { CouchDBAdapterOptions, HerdDoc, HerdSyncStatus, PouchDBCtor } from "@/types";
 
 /**
  * React Context value shape for HerdSync.
@@ -33,9 +21,7 @@ export interface HerdSyncContextValue<T extends HerdDoc = HerdDoc> {
   adapter: CouchDBAdapter<T> | null;
 }
 
-const HerdSyncContext = createContext<HerdSyncContextValue<HerdDoc> | null>(
-  null,
-);
+const HerdSyncContext = createContext<HerdSyncContextValue<HerdDoc> | null>(null);
 
 /**
  * Props for the HerdSyncProvider component.
@@ -57,14 +43,14 @@ export function HerdSyncProvider<T extends HerdDoc = HerdDoc>({
   backOffMultiplier,
   initialBackOffMs,
   maxBackOffMs,
-  children,
+  children
 }: HerdSyncProviderProps) {
   const [db, setDb] = useState<PouchDB.Database<T> | null>(null);
   const [status, setStatus] = useState<HerdSyncStatus>({
     state: "uninitialized",
     lastSyncedAt: null,
     pendingPushes: 0,
-    error: null,
+    error: null
   });
 
   const adapterRef = useRef<CouchDBAdapter<T> | null>(null);
@@ -78,8 +64,7 @@ export function HerdSyncProvider<T extends HerdDoc = HerdDoc>({
       if (typeof window === "undefined") return;
 
       const PouchDBModule = await import("pouchdb-browser");
-      const Ctor = (PouchDBModule.default ||
-        PouchDBModule) as unknown as PouchDBCtor<T>;
+      const Ctor = (PouchDBModule.default || PouchDBModule) as unknown as PouchDBCtor<T>;
 
       if (isDisposed) return;
 
@@ -94,7 +79,7 @@ export function HerdSyncProvider<T extends HerdDoc = HerdDoc>({
         retry,
         backOffMultiplier,
         initialBackOffMs,
-        maxBackOffMs,
+        maxBackOffMs
       });
 
       adapterRef.current = adapter;
@@ -127,22 +112,20 @@ export function HerdSyncProvider<T extends HerdDoc = HerdDoc>({
     retry,
     backOffMultiplier,
     initialBackOffMs,
-    maxBackOffMs,
+    maxBackOffMs
   ]);
 
   const contextValue = useMemo(
     (): HerdSyncContextValue<T> => ({
       db,
       status,
-      adapter: adapterRef.current,
+      adapter: adapterRef.current
     }),
-    [db, status],
+    [db, status]
   );
 
   return (
-    <HerdSyncContext.Provider
-      value={contextValue as unknown as HerdSyncContextValue<HerdDoc>}
-    >
+    <HerdSyncContext.Provider value={contextValue as unknown as HerdSyncContextValue<HerdDoc>}>
       {children}
     </HerdSyncContext.Provider>
   );
@@ -151,9 +134,7 @@ export function HerdSyncProvider<T extends HerdDoc = HerdDoc>({
 /**
  * Hook to access the current database instance and replication status.
  */
-export function useHerdSync<
-  T extends HerdDoc = HerdDoc,
->(): HerdSyncContextValue<T> {
+export function useHerdSync<T extends HerdDoc = HerdDoc>(): HerdSyncContextValue<T> {
   const context = useContext(HerdSyncContext);
   if (!context) {
     throw new Error("useHerdSync must be used within a HerdSyncProvider");

@@ -3,7 +3,7 @@ const nextConfig = {
   output: "export",
   transpilePackages: ["@onebuffalo/herd-sync"],
   images: {
-    unoptimized: true,
+    unoptimized: true
   },
   webpack: (config, { isServer }) => {
     if (isServer) {
@@ -11,11 +11,11 @@ const nextConfig = {
         ...config.resolve.fallback,
         events: false,
         buffer: false,
-        stream: false,
+        stream: false
       };
     }
     return config;
-  },
+  }
 };
 
 export default nextConfig;

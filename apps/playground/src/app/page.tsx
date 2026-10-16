@@ -4,12 +4,7 @@
 import { useState } from "react";
 
 // --- HerdSync ---
-import {
-  HerdDoc,
-  HerdSyncProvider,
-  useHerdDoc,
-  useHerdSync,
-} from "@onebuffalo/herd-sync";
+import { HerdDoc, HerdSyncProvider, useHerdDoc, useHerdSync } from "@onebuffalo/herd-sync";
 
 interface TaskDoc extends HerdDoc {
   title: string;
@@ -20,13 +15,13 @@ function PlaygroundInner() {
   const { status } = useHerdSync();
   const { doc, save, loading } = useHerdDoc<TaskDoc>("test_task_1", {
     title: "Initial Local Task",
-    completed: false,
+    completed: false
   });
 
   const handleToggle = (): void => {
     void save({
       title: `Task updated at ${new Date().toLocaleTimeString()}`,
-      completed: !doc?.completed,
+      completed: !doc?.completed
     });
   };
 
@@ -36,7 +31,7 @@ function PlaygroundInner() {
         style={{
           border: "1px solid #ccc",
           padding: "1rem",
-          borderRadius: "8px",
+          borderRadius: "8px"
         }}
       >
         <h2>Live Sync State</h2>
@@ -60,7 +55,7 @@ function PlaygroundInner() {
         style={{
           border: "1px solid #ccc",
           padding: "1rem",
-          borderRadius: "8px",
+          borderRadius: "8px"
         }}
       >
         <h2>Reactive Document (useHerdDoc)</h2>
@@ -72,7 +67,7 @@ function PlaygroundInner() {
               style={{
                 background: "#f4f4f4",
                 padding: "1rem",
-                borderRadius: "4px",
+                borderRadius: "4px"
               }}
             >
               {JSON.stringify(doc, null, 2)}
@@ -83,7 +78,7 @@ function PlaygroundInner() {
               style={{
                 padding: "0.5rem 1rem",
                 cursor: "pointer",
-                marginTop: "0.5rem",
+                marginTop: "0.5rem"
               }}
             >
               Toggle &amp; Save Document
@@ -104,10 +99,7 @@ export default function Page() {
       <p>Testing PouchDB client-side persistence and sync status.</p>
 
       <div style={{ marginBottom: "1.5rem" }}>
-        <label
-          htmlFor="remote-url-input"
-          style={{ display: "block", marginBottom: "0.5rem" }}
-        >
+        <label htmlFor="remote-url-input" style={{ display: "block", marginBottom: "0.5rem" }}>
           Remote CouchDB URL (optional):
         </label>
         <input
@@ -120,10 +112,7 @@ export default function Page() {
         />
       </div>
 
-      <HerdSyncProvider
-        name="playground_tasks_db"
-        remoteUrl={remoteUrl || undefined}
-      >
+      <HerdSyncProvider name="playground_tasks_db" remoteUrl={remoteUrl || undefined}>
         <PlaygroundInner />
       </HerdSyncProvider>
     </main>

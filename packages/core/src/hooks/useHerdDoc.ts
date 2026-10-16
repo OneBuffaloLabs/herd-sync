@@ -28,7 +28,7 @@ export interface UseHerdDocReturn<T extends HerdDoc> {
  */
 export function useHerdDoc<T extends HerdDoc>(
   id: string,
-  initialDoc?: Partial<T>,
+  initialDoc?: Partial<T>
 ): UseHerdDocReturn<T> {
   const { db } = useHerdSync<T>();
   const [doc, setDoc] = useState<T | null>(null);
@@ -53,7 +53,7 @@ export function useHerdDoc<T extends HerdDoc>(
           const fallbackDoc = {
             ...initialDoc,
             _id: id,
-            updatedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
           } as T;
           setDoc(fallbackDoc);
         } else if (isMounted.current) {
@@ -83,7 +83,7 @@ export function useHerdDoc<T extends HerdDoc>(
         since: "now",
         live: true,
         include_docs: true,
-        doc_ids: [id],
+        doc_ids: [id]
       })
       .on("change", (change: PouchDB.Core.ChangesResponseChange<T>) => {
         if (!isMounted.current) return;
@@ -122,7 +122,7 @@ export function useHerdDoc<T extends HerdDoc>(
         ...patch,
         _id: id,
         _rev: currentRev,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       } as T;
 
       const response = await db.put(updatedDoc);
@@ -130,7 +130,7 @@ export function useHerdDoc<T extends HerdDoc>(
       setDoc(savedDoc);
       return savedDoc;
     },
-    [db, id, doc],
+    [db, id, doc]
   );
 
   const remove = useCallback(async (): Promise<void> => {

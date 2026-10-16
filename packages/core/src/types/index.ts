@@ -8,21 +8,14 @@ import type PouchDB from "pouchdb-browser";
  */
 export type PouchDBCtor<T extends HerdDoc> = new (
   name?: string,
-  options?: PouchDB.Configuration.DatabaseConfiguration,
+  options?: PouchDB.Configuration.DatabaseConfiguration
 ) => PouchDB.Database<T>;
 
 /**
  * Lifecycle connection state for the sync adapter.
  */
 export type SyncConnectionState =
-  | "uninitialized"
-  | "idle"
-  | "connecting"
-  | "connected"
-  | "syncing"
-  | "paused"
-  | "error"
-  | "denied";
+  "uninitialized" | "idle" | "connecting" | "connected" | "syncing" | "paused" | "error" | "denied";
 
 /**
  * Base document shape managed by HerdSync.

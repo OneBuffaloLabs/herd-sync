@@ -2,10 +2,19 @@
   "name": "@onebuffalo/eslint-config",
   "version": "0.1.0",
   "private": true,
-  "main": "index.js",
+  "type": "module",
+  "main": "index.mjs",
+  "files": [
+    "index.mjs",
+    "base.mjs"
+  ],
+  "exports": {
+    ".": "./index.mjs",
+    "./base": "./base.mjs"
+  },
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "^8.25.0",
-    "@typescript-eslint/parser": "^8.25.0",
-    "eslint-config-prettier": "^10.0.0"
+    "@eslint/js": "^9.21.0",
+    "eslint-config-prettier": "^10.0.0",
+    "typescript-eslint": "^8.25.0"
   }
 }
