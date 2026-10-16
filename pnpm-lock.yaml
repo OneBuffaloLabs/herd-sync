@@ -50,6 +50,10 @@ importers:
         version: 5.9.3
 
   packages/core:
+    dependencies:
+      pouchdb-browser:
+        specifier: ^9.0.0
+        version: 9.0.0
     devDependencies:
       '@onebuffalo/tsconfig':
         specifier: workspace:*
@@ -57,6 +61,27 @@ importers:
       '@types/node':
         specifier: ^22.0.0
         version: 22.20.5
+      '@types/pouchdb':
+        specifier: ^6.4.2
+        version: 6.4.2
+      '@types/pouchdb-browser':
+        specifier: ^6.1.5
+        version: 6.1.5
+      '@types/pouchdb-core':
+        specifier: ^7.0.15
+        version: 7.0.15
+      '@types/pouchdb-find':
+        specifier: ^7.3.3
+        version: 7.3.3
+      '@types/pouchdb-replication':
+        specifier: ^6.4.7
+        version: 6.4.7
+      react:
+        specifier: ^19.0.0
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.3.1(react@19.3.1)
       tsup:
         specifier: ^8.4.0
         version: 8.5.1(postcss@8.4.31)(typescript@5.9.3)
@@ -678,6 +703,9 @@ packages:
     cpu: [arm64]
     os: [win32]
 
+  '@types/debug@4.1.13':
+    resolution: {integrity: sha512-KSVgmQmzMwPlmtljOomayoR89W4FynCAi3E8PPs7vmDVPe84hT+vGPKkJfThkmXs0x0jAaa9U8uW8bbfyS2fWw==}
+
   '@types/esrecurse@4.3.1':
     resolution: {integrity: sha512-xJBAbDifo5hpffDBuHl0Y8ywswbiAp/Wi7Y/GtAgSlZyIABppyurxVueOPE8LUQOxdlgi6Zqce7uoEpqNTeiUw==}
 
@@ -687,8 +715,62 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
+  '@types/ms@2.1.0':
+    resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
+
   '@types/node@22.20.5':
     resolution: {integrity: sha512-U2+DNr+wSjpsTS/wZGYHq7GcwfuSmKiKvoPvK22zwTlRhU91yOniN4qRR5KhIjvif7ysw/dz/hKmfDH0Ris4aA==}
+
+  '@types/pouchdb-adapter-cordova-sqlite@1.0.4':
+    resolution: {integrity: sha512-1MGjmAMux3OIyJ+iXfhJ5hNIzS+KjGJ05O3bF5Gen5TiJUFNK1bOp3VVV9SxXgz+hGwnBruBAWdAqhbB6ZHhSA==}
+
+  '@types/pouchdb-adapter-fruitdown@6.1.6':
+    resolution: {integrity: sha512-KaFB29hUI97eTtJI6pjv7EQcqhZ63qHWovKgyiE+HZF5fVmdrBbTmnIrbR87AJXcXKy47+oQFJ7rzxY8TalpLQ==}
+
+  '@types/pouchdb-adapter-http@6.1.6':
+    resolution: {integrity: sha512-DJur1mt07GJXwGb5K+MOILoCOSgoQpsi7hybcTzRLeR3IO8Y8eq7TnhTkftAJdx9VHJGOiOXFjO+8BYM69j5yA==}
+
+  '@types/pouchdb-adapter-idb@6.1.7':
+    resolution: {integrity: sha512-KwjkJ4fTNz5wPXYu20bUoWud7ty0t7tgdo4oc0AJvG+fcURAH7mI7uFmpE4dZIT+hUq5G61xu96AVq9b2q4T3g==}
+
+  '@types/pouchdb-adapter-leveldb@6.1.6':
+    resolution: {integrity: sha512-mqeTpA2Ni2U4FA5ISRESy4WwhfUahXViUa3jQpXGdSpruaeHlhTLzZJPyz7/mGlvdAfAFv9Vd5d6ys3ASmMujw==}
+
+  '@types/pouchdb-adapter-localstorage@6.1.6':
+    resolution: {integrity: sha512-+HQBCpD80XkKJE64r7uLwzkNRgkvMnhDI5rIFLx3USxdrRph/R3awcEubRFndcgtxzcUaL9iYw9KetgFMUqPrg==}
+
+  '@types/pouchdb-adapter-memory@6.1.6':
+    resolution: {integrity: sha512-QCCtW561XuwFACzP/4zYySzs/a4em0EeuQdszen0YOaGV1/fRqJE0dOlmzh8do4sNJomLO6+MFtEzguGljnkgA==}
+
+  '@types/pouchdb-adapter-node-websql@6.1.5':
+    resolution: {integrity: sha512-yi68syUvHs4OM3mzKlh4zfpov64KITIAnxi387zgdby6SEfAJzWPC0dfH77iEVRDGCrKb3cKTNkl/UGHnphaow==}
+
+  '@types/pouchdb-adapter-websql@6.1.7':
+    resolution: {integrity: sha512-9oNkP5ZCGMkQALO9KmtbHXlkBq8i2hoCEE6/gWzRicAvL1y+WIKjEQiIIEamMhj5u5tARvW3n2/r+JXwLCyYgw==}
+
+  '@types/pouchdb-browser@6.1.5':
+    resolution: {integrity: sha512-f+HjxEjYFpgoYWXnMI9AQZZ+SIG8dBiBPrpfWWGsCl+48rumsP5BuBWHq/aXoB8SRKYO0XdP4TNvMBWM3UATCw==}
+
+  '@types/pouchdb-core@7.0.15':
+    resolution: {integrity: sha512-gq1Qbqn9nCaAKRRv6fRHZ4/ER+QYEwSXBZlDQcxwdbPrtZO8EhIn2Bct0AlguaSEdFcABfbaxxyQwFINkNQ9dQ==}
+
+  '@types/pouchdb-find@7.3.3':
+    resolution: {integrity: sha512-U7zXk67s9Ar+9Pwj5kSbuMnn8zif0AOOIPy4KRFeJ/S/Tk+mNS90soj+3OV21H8xyB7WTxjvS1JLablZC6C6ow==}
+
+  '@types/pouchdb-http@6.1.5':
+    resolution: {integrity: sha512-9jGCAl6DUsXIl1vjuPu8tzGykAr84549P4IS0zYdrOKq5eXzQRUb/tb2hEVTmmTcYKXu2P1N55ABsdDNZvzGGA==}
+
+  '@types/pouchdb-mapreduce@6.1.10':
+    resolution: {integrity: sha512-AgYVqCnaA5D7cWkWyzZVuk0137N4yZsmIQTD/i3DmuMxYYoFrtWUoQu0tbA52SpTRGdL8ubQ7JFQXzA13fA6IQ==}
+
+  '@types/pouchdb-node@6.1.7':
+    resolution: {integrity: sha512-hryc2eCtNB3GbLcHSwU8glLaY66gDMus1AYkcIYAAxufdnK2BAy1oxaRLmnwRn1A1vG41P/t0htFD161LUnfQw==}
+
+  '@types/pouchdb-replication@6.4.7':
+    resolution: {integrity: sha512-slB4zOwri3SAVHioFx/FWC/KqOzzb7nDFtV+qzaKzxkf+U5zTwCbK3uRHaj0d/XQk0DwVeajf1ni3Wiyq3j2OA==}
+
+  '@types/pouchdb@6.4.2':
+    resolution: {integrity: sha512-YsI47rASdtzR+3V3JE2UKY58snhm0AglHBpyckQBkRYoCbTvGagXHtV0x5n8nzN04jQmvTG+Sm85cIzKT3KXBA==}
 
   '@types/react-dom@19.3.0':
     resolution: {integrity: sha512-ZI7bU42mZXXKHn/qNLEw2IrbiINU7X5+vfgdixBHkCNpYWXjKgfQ/P+uyGb5CjOLB9UcnTeg3rylQtV2hym44Q==}
@@ -1111,6 +1193,9 @@ packages:
     resolution: {integrity: sha512-PS08Iboia9mts/2ygV3eLpY5ghnUcfLV/EXTOW1E2qYxJKGGBUtNjN76FYHnMs36RmARn41bC0AZmn+rR0OVpQ==}
     engines: {node: ^10 || ^12 || >=14}
 
+  pouchdb-browser@9.0.0:
+    resolution: {integrity: sha512-0uKFWhsTtiVOF0+aGo7mvtCTP40f6dlsLNmJUvc/lwjsX1C3v+eBfVbvykyxpFl7UTAoJkXl+g/GOzNvyMtV1g==}
+
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
@@ -1182,6 +1267,9 @@ packages:
   source-map@0.7.6:
     resolution: {integrity: sha512-i5uvt8C3ikiWeNZSVZNWcfZPItFQOsYTUAOkcUPGd8DqDy1uOUikjt5dG+uRlwyvR108Fb9DOd4GvXfT0N2/uQ==}
     engines: {node: '>= 12'}
+
+  spark-md5@3.0.2:
+    resolution: {integrity: sha512-wcFzz9cDfbuqe0FZzfi2or1sgyIrsDwmPwfZC4hiNidPdPINjeUwNfv5kldczoEAcjl9Y1L3SM7Uz2PUEQzxQw==}
 
   styled-jsx@5.1.6:
     resolution: {integrity: sha512-qSVyDTeMotdvQYoHWLNGwRFJHC+i+ZvdBRYosOFgC+Wg1vx4frN2/RG/NA7SYqqvKNLf39P2LSRA2pu6n0XYZA==}
@@ -1271,6 +1359,13 @@ packages:
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
+
+  uuid@8.3.2:
+    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    hasBin: true
+
+  vuvuzela@1.0.3:
+    resolution: {integrity: sha512-Tm7jR1xTzBbPW+6y1tknKiEhz04Wf/1iZkcTJjSFcpNko43+dFW6+OOeQe9taJIug3NdfUAjFKgUSyQrIKaDvQ==}
 
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
@@ -1683,15 +1778,116 @@ snapshots:
   '@turbo/windows-arm64@2.11.8':
     optional: true
 
+  '@types/debug@4.1.13':
+    dependencies:
+      '@types/ms': 2.1.0
+
   '@types/esrecurse@4.3.1': {}
 
   '@types/estree@1.0.9': {}
 
   '@types/json-schema@7.0.15': {}
 
+  '@types/ms@2.1.0': {}
+
   '@types/node@22.20.5':
     dependencies:
       undici-types: 6.21.0
+
+  '@types/pouchdb-adapter-cordova-sqlite@1.0.4':
+    dependencies:
+      '@types/pouchdb-core': 7.0.15
+
+  '@types/pouchdb-adapter-fruitdown@6.1.6':
+    dependencies:
+      '@types/pouchdb-core': 7.0.15
+
+  '@types/pouchdb-adapter-http@6.1.6':
+    dependencies:
+      '@types/pouchdb-core': 7.0.15
+
+  '@types/pouchdb-adapter-idb@6.1.7':
+    dependencies:
+      '@types/pouchdb-core': 7.0.15
+
+  '@types/pouchdb-adapter-leveldb@6.1.6':
+    dependencies:
+      '@types/pouchdb-core': 7.0.15
+
+  '@types/pouchdb-adapter-localstorage@6.1.6':
+    dependencies:
+      '@types/pouchdb-core': 7.0.15
+
+  '@types/pouchdb-adapter-memory@6.1.6':
+    dependencies:
+      '@types/pouchdb-core': 7.0.15
+
+  '@types/pouchdb-adapter-node-websql@6.1.5':
+    dependencies:
+      '@types/pouchdb-adapter-websql': 6.1.7
+      '@types/pouchdb-core': 7.0.15
+
+  '@types/pouchdb-adapter-websql@6.1.7':
+    dependencies:
+      '@types/pouchdb-core': 7.0.15
+
+  '@types/pouchdb-browser@6.1.5':
+    dependencies:
+      '@types/pouchdb-adapter-http': 6.1.6
+      '@types/pouchdb-adapter-idb': 6.1.7
+      '@types/pouchdb-adapter-websql': 6.1.7
+      '@types/pouchdb-core': 7.0.15
+      '@types/pouchdb-mapreduce': 6.1.10
+      '@types/pouchdb-replication': 6.4.7
+
+  '@types/pouchdb-core@7.0.15':
+    dependencies:
+      '@types/debug': 4.1.13
+      '@types/pouchdb-find': 7.3.3
+
+  '@types/pouchdb-find@7.3.3':
+    dependencies:
+      '@types/pouchdb-core': 7.0.15
+
+  '@types/pouchdb-http@6.1.5':
+    dependencies:
+      '@types/pouchdb-adapter-http': 6.1.6
+      '@types/pouchdb-core': 7.0.15
+
+  '@types/pouchdb-mapreduce@6.1.10':
+    dependencies:
+      '@types/pouchdb-core': 7.0.15
+
+  '@types/pouchdb-node@6.1.7':
+    dependencies:
+      '@types/pouchdb-adapter-http': 6.1.6
+      '@types/pouchdb-adapter-leveldb': 6.1.6
+      '@types/pouchdb-core': 7.0.15
+      '@types/pouchdb-mapreduce': 6.1.10
+      '@types/pouchdb-replication': 6.4.7
+
+  '@types/pouchdb-replication@6.4.7':
+    dependencies:
+      '@types/pouchdb-core': 7.0.15
+      '@types/pouchdb-find': 7.3.3
+
+  '@types/pouchdb@6.4.2':
+    dependencies:
+      '@types/pouchdb-adapter-cordova-sqlite': 1.0.4
+      '@types/pouchdb-adapter-fruitdown': 6.1.6
+      '@types/pouchdb-adapter-http': 6.1.6
+      '@types/pouchdb-adapter-idb': 6.1.7
+      '@types/pouchdb-adapter-leveldb': 6.1.6
+      '@types/pouchdb-adapter-localstorage': 6.1.6
+      '@types/pouchdb-adapter-memory': 6.1.6
+      '@types/pouchdb-adapter-node-websql': 6.1.5
+      '@types/pouchdb-adapter-websql': 6.1.7
+      '@types/pouchdb-browser': 6.1.5
+      '@types/pouchdb-core': 7.0.15
+      '@types/pouchdb-http': 6.1.5
+      '@types/pouchdb-mapreduce': 6.1.10
+      '@types/pouchdb-node': 6.1.7
+      '@types/pouchdb-replication': 6.4.7
 
   '@types/react-dom@19.3.0(@types/react@19.3.0)':
     dependencies:
@@ -2145,6 +2341,12 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.2
 
+  pouchdb-browser@9.0.0:
+    dependencies:
+      spark-md5: 3.0.2
+      uuid: 8.3.2
+      vuvuzela: 1.0.3
+
   prelude-ls@1.2.1: {}
 
   prettier@3.9.10: {}
@@ -2246,6 +2448,8 @@ snapshots:
 
   source-map@0.7.6: {}
 
+  spark-md5@3.0.2: {}
+
   styled-jsx@5.1.6(react@19.3.1):
     dependencies:
       client-only: 0.0.1
@@ -2336,6 +2540,10 @@ snapshots:
   uri-js@4.4.1:
     dependencies:
       punycode: 2.3.1
+
+  uuid@8.3.2: {}
+
+  vuvuzela@1.0.3: {}
 
   which@2.0.2:
     dependencies:

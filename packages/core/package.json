@@ -20,9 +20,25 @@
     "dev": "tsup --watch",
     "clean": "rm -rf dist"
   },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "dependencies": {
+    "pouchdb-browser": "^9.0.0"
+  },
   "devDependencies": {
     "@onebuffalo/tsconfig": "workspace:*",
     "@types/node": "^22.0.0",
+    "@types/pouchdb": "^6.4.2",
+    "@types/pouchdb-browser": "^6.1.5",
+    "@types/pouchdb-core": "^7.0.15",
+    "@types/pouchdb-find": "^7.3.3",
+    "@types/pouchdb-replication": "^6.4.7",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "tsup": "^8.4.0",
     "typescript": "^5.8.0"
   },
