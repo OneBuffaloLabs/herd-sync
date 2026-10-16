@@ -1,0 +1,16 @@
+{
+  "name": "herd-sync-monorepo",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.0",
+    "typescript": "^5.8.0",
+    "prettier": "^3.5.0"
+  },
+  "packageManager": "pnpm@9.15.0"
+}
