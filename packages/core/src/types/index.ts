@@ -69,3 +69,27 @@ export interface SyncAdapter {
   getStatus(): HerdSyncStatus;
   subscribe(callback: (status: HerdSyncStatus) => void): () => void;
 }
+
+/**
+ * Signature for pluggable conflict resolution functions.
+ */
+export type ConflictResolver<T extends HerdDoc = HerdDoc> = (
+  localDoc: T,
+  conflictingDoc: T
+) => T | Promise<T>;
+
+/**
+ * Result report after resolving a document's conflicting revisions.
+ */
+export interface ConflictResolutionResult<T extends HerdDoc = HerdDoc> {
+  resolvedDoc: T;
+  purgedRevisions: string[];
+}
+
+/**
+ * Options for configuring the conflict resolution runner.
+ */
+export interface ConflictResolutionOptions<T extends HerdDoc = HerdDoc> {
+  resolver?: ConflictResolver<T>;
+  timeoutMs?: number;
+}
