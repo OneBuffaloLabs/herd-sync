@@ -1,6 +1,6 @@
 # @onebuffalolabs/herd-sync
 
-Core local-first state and database synchronization engine for HerdSync. Provides dynamic client-side PouchDB initialization, reactive React hooks, and bi-directional CouchDB synchronization.
+Core local-first state and database synchronization engine for HerdSync. Provides dynamic client-side PouchDB initialization, reactive React hooks, bi-directional CouchDB synchronization, and pluggable conflict resolution.
 
 ---
 
@@ -9,6 +9,34 @@ Core local-first state and database synchronization engine for HerdSync. Provide
 ```bash
 pnpm add @onebuffalolabs/herd-sync
 
+```
+
+### Static Next.js Configuration (`output: 'export'`)
+
+When using HerdSync inside static Next.js applications, configure `next.config.mjs` to transpile the package and stub node-specific server fallbacks:
+
+```javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: "export",
+  transpilePackages: ["@onebuffalolabs/herd-sync"],
+  images: {
+    unoptimized: true
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        events: false,
+        buffer: false,
+        stream: false
+      };
+    }
+    return config;
+  }
+};
+
+export default nextConfig;
 ```
 
 ---
@@ -48,6 +76,18 @@ const { doc, loading, error, save, remove } = useHerdDoc<TaskDoc>("task_123", {
 - `error`: Non-null if an IndexedDB read/write failure occurs.
 - `save(patch)`: Persists updates, generates an updated ISO `updatedAt` timestamp, and writes the current `_rev`.
 - `remove()`: Marks the document as deleted and purges it locally.
+
+### Conflict Resolution
+
+Resolve divergent PouchDB revision branches using `resolveDocConflicts` with built-in strategies (`resolveLWW`, `createArrayMergeResolver`) or custom domain handlers:
+
+```typescript
+import { resolveDocConflicts, resolveLWW } from "@onebuffalolabs/herd-sync";
+
+await resolveDocConflicts(db, "task_123", {
+  resolver: resolveLWW
+});
+```
 
 ---
 

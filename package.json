@@ -8,6 +8,8 @@
     "test": "turbo run test",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md}\"",
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md}\"",
+    "verify": "pnpm format:check && pnpm lint && pnpm test && pnpm build",
+    "release": "pnpm verify && pnpm -r publish --access public",
     "clean": "turbo run clean && rm -rf node_modules"
   },
   "devDependencies": {
