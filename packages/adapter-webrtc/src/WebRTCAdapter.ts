@@ -2,7 +2,7 @@
 import type PouchDB from "pouchdb-browser";
 
 // --- HerdSync ---
-import type { HerdDoc, HerdSyncStatus, SyncAdapter } from "@onebuffalo/herd-sync";
+import type { HerdDoc, HerdSyncStatus, SyncAdapter } from "@onebuffalolabs/herd-sync";
 
 // --- Types ---
 import type { SyncPayload } from "@/types";

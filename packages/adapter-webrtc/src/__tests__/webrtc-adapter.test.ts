@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import PouchDB from "pouchdb-browser";
-import type { HerdDoc, PouchDBCtor } from "@onebuffalo/herd-sync";
+import type { HerdDoc, PouchDBCtor } from "@onebuffalolabs/herd-sync";
 import { WebRTCAdapter } from "@/WebRTCAdapter";
 
 interface ItemDoc extends HerdDoc {

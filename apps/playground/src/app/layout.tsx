@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 
 export const metadata: Metadata = {
   title: "HerdSync Playground",
-  description: "Static export integration testbed for @onebuffalo/herd-sync"
+  description: "Static export integration testbed for @onebuffalolabs/herd-sync"
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

@@ -1,4 +1,4 @@
-# @onebuffalo/adapter-webrtc
+# @onebuffalolabs/adapter-webrtc
 
 Zero-backend peer-to-peer replication adapter for HerdSync using WebRTC data channels and QR-code signaling.
 
@@ -7,7 +7,7 @@ Zero-backend peer-to-peer replication adapter for HerdSync using WebRTC data cha
 ## Installation
 
 ```bash
-pnpm add @onebuffalo/adapter-webrtc @onebuffalo/herd-sync
+pnpm add @onebuffalolabs/adapter-webrtc @onebuffalolabs/herd-sync
 
 ```
 
@@ -19,8 +19,8 @@ pnpm add @onebuffalo/adapter-webrtc @onebuffalo/herd-sync
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useHerdSync } from "@onebuffalo/herd-sync";
-import { WebRTCAdapter, SyncModal } from "@onebuffalo/adapter-webrtc";
+import { useHerdSync } from "@onebuffalolabs/herd-sync";
+import { WebRTCAdapter, SyncModal } from "@onebuffalolabs/adapter-webrtc";
 
 export function P2PSyncButton() {
   const { db } = useHerdSync();

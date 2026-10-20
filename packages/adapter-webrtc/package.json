@@ -1,5 +1,5 @@
 {
-  "name": "@onebuffalo/adapter-webrtc",
+  "name": "@onebuffalolabs/adapter-webrtc",
   "version": "0.1.0",
   "description": "Zero-backend P2P WebRTC sync adapter for HerdSync",
   "main": "./dist/index.js",
@@ -23,7 +23,7 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@onebuffalo/herd-sync": "workspace:*",
+    "@onebuffalolabs/herd-sync": "workspace:*",
     "pouchdb-browser": "^9.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
@@ -34,9 +34,9 @@
     "qrcode.react": "^4.2.0"
   },
   "devDependencies": {
-    "@onebuffalo/eslint-config": "workspace:*",
-    "@onebuffalo/herd-sync": "workspace:*",
-    "@onebuffalo/tsconfig": "workspace:*",
+    "@onebuffalolabs/eslint-config": "workspace:*",
+    "@onebuffalolabs/herd-sync": "workspace:*",
+    "@onebuffalolabs/tsconfig": "workspace:*",
     "@types/node": "^22.0.0",
     "@types/pouchdb-browser": "^6.1.5",
     "@types/pouchdb-core": "^7.0.15",

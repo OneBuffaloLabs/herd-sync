@@ -8,7 +8,7 @@ import jsQR from "jsqr";
 import { QRCodeSVG } from "qrcode.react";
 
 // --- HerdSync ---
-import type { HerdSyncStatus } from "@onebuffalo/herd-sync";
+import type { HerdSyncStatus } from "@onebuffalolabs/herd-sync";
 
 // --- Signaling & Adapter ---
 import { compressSDP, decompressSDP } from "@/signaling/qr";

@@ -1,4 +1,4 @@
-# @onebuffalo/herd-sync
+# @onebuffalolabs/herd-sync
 
 Core local-first state and database synchronization engine for HerdSync. Provides dynamic client-side PouchDB initialization, reactive React hooks, and bi-directional CouchDB synchronization.
 
@@ -7,7 +7,7 @@ Core local-first state and database synchronization engine for HerdSync. Provide
 ## Installation
 
 ```bash
-pnpm add @onebuffalo/herd-sync
+pnpm add @onebuffalolabs/herd-sync
 
 ```
 
@@ -20,7 +20,7 @@ pnpm add @onebuffalo/herd-sync
 Initializes the browser database and orchestrates background replication tasks.
 
 ```tsx
-import { HerdSyncProvider } from "@onebuffalo/herd-sync";
+import { HerdSyncProvider } from "@onebuffalolabs/herd-sync";
 
 <HerdSyncProvider
   live="{true}"

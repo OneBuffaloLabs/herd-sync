@@ -6,11 +6,11 @@ A modular, local-first synchronization toolkit designed for static Next.js appli
 
 ## Workspace Packages
 
-| Package                                                   | Version | Description                                                                               |
-| :-------------------------------------------------------- | :------ | :---------------------------------------------------------------------------------------- |
-| [`@onebuffalo/herd-sync`](./packages/core)                | `0.1.0` | Core client-side database provider, reactive `useHerdDoc` hook, and CouchDB sync adapter. |
-| [`@onebuffalo/adapter-webrtc`](./packages/adapter-webrtc) | `0.1.0` | Zero-backend peer-to-peer sync adapter using WebRTC data channels and QR-code signaling.  |
-| `playground`                                              | `0.1.0` | Reference Next.js 15 playground verifying persistence, replication, and camera scanning.  |
+| Package                                                       | Version | Description                                                                               |
+| :------------------------------------------------------------ | :------ | :---------------------------------------------------------------------------------------- |
+| [`@onebuffalolabs/herd-sync`](./packages/core)                | `0.1.0` | Core client-side database provider, reactive `useHerdDoc` hook, and CouchDB sync adapter. |
+| [`@onebuffalolabs/adapter-webrtc`](./packages/adapter-webrtc) | `0.1.0` | Zero-backend peer-to-peer sync adapter using WebRTC data channels and QR-code signaling.  |
+| `playground`                                                  | `0.1.0` | Reference Next.js 15 playground verifying persistence, replication, and camera scanning.  |
 
 ---
 
@@ -19,7 +19,7 @@ A modular, local-first synchronization toolkit designed for static Next.js appli
 Install the core package in your Next.js application:
 
 ```bash
-pnpm add @onebuffalo/herd-sync
+pnpm add @onebuffalolabs/herd-sync
 
 ```
 
@@ -28,7 +28,7 @@ Wrap your application in `HerdSyncProvider` and read/write reactive documents us
 ```tsx
 "use client";
 
-import { HerdSyncProvider, useHerdDoc, type HerdDoc } from "@onebuffalo/herd-sync";
+import { HerdSyncProvider, useHerdDoc, type HerdDoc } from "@onebuffalolabs/herd-sync";
 
 interface Note extends HerdDoc {
   body: string;

@@ -4,10 +4,10 @@
 import { useEffect, useRef, useState } from "react";
 
 // --- WebRTC ---
-import { SyncModal, WebRTCAdapter } from "@onebuffalo/adapter-webrtc";
+import { SyncModal, WebRTCAdapter } from "@onebuffalolabs/adapter-webrtc";
 
 // --- HerdSync ---
-import { HerdDoc, HerdSyncProvider, useHerdDoc, useHerdSync } from "@onebuffalo/herd-sync";
+import { HerdDoc, HerdSyncProvider, useHerdDoc, useHerdSync } from "@onebuffalolabs/herd-sync";
 
 interface TaskDoc extends HerdDoc {
   title: string;

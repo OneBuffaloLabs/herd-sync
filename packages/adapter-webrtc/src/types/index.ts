@@ -1,5 +1,5 @@
 // --- Types ---
-import type { HerdDoc } from "@onebuffalo/herd-sync";
+import type { HerdDoc } from "@onebuffalolabs/herd-sync";
 
 /**
  * Payload envelope for WebRTC data channel replication messages.

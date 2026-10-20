@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "export",
-  transpilePackages: ["@onebuffalo/herd-sync", "@onebuffalo/adapter-webrtc"],
+  transpilePackages: ["@onebuffalolabs/herd-sync", "@onebuffalolabs/adapter-webrtc"],
   images: {
     unoptimized: true
   },

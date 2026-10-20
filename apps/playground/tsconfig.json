@@ -1,5 +1,5 @@
 {
-  "extends": "@onebuffalo/tsconfig/nextjs.json",
+  "extends": "@onebuffalolabs/tsconfig/nextjs.json",
   "compilerOptions": {
     "plugins": [{ "name": "next" }],
     "paths": {

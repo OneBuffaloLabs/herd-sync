@@ -1,4 +1,4 @@
-import baseConfig from "@onebuffalo/eslint-config/base";
+import baseConfig from "@onebuffalolabs/eslint-config/base";
 
 export default [
   ...baseConfig,

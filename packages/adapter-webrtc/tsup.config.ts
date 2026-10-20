@@ -5,5 +5,5 @@ export default defineConfig({
   format: ["cjs", "esm"],
   dts: true,
   clean: true,
-  external: ["react", "react-dom", "@onebuffalo/herd-sync", "pouchdb-browser"]
+  external: ["react", "react-dom", "@onebuffalolabs/herd-sync", "pouchdb-browser"]
 });

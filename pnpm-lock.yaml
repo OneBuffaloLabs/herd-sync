@@ -11,10 +11,10 @@ importers:
       '@eslint/js':
         specifier: ^9.21.0
         version: 9.39.5
-      '@onebuffalo/eslint-config':
+      '@onebuffalolabs/eslint-config':
         specifier: workspace:*
         version: link:packages/eslint-config
-      '@onebuffalo/tsconfig':
+      '@onebuffalolabs/tsconfig':
         specifier: workspace:*
         version: link:packages/tsconfig
       eslint:
@@ -41,10 +41,10 @@ importers:
 
   apps/playground:
     dependencies:
-      '@onebuffalo/adapter-webrtc':
+      '@onebuffalolabs/adapter-webrtc':
         specifier: workspace:^
         version: link:../../packages/adapter-webrtc
-      '@onebuffalo/herd-sync':
+      '@onebuffalolabs/herd-sync':
         specifier: workspace:*
         version: link:../../packages/core
       next:
@@ -57,10 +57,10 @@ importers:
         specifier: ^19.0.0
         version: 19.3.1(react@19.3.1)
     devDependencies:
-      '@onebuffalo/eslint-config':
+      '@onebuffalolabs/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@onebuffalo/tsconfig':
+      '@onebuffalolabs/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
       '@types/node':
@@ -97,13 +97,13 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0(react@19.3.1)
     devDependencies:
-      '@onebuffalo/eslint-config':
+      '@onebuffalolabs/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@onebuffalo/herd-sync':
+      '@onebuffalolabs/herd-sync':
         specifier: workspace:*
         version: link:../core
-      '@onebuffalo/tsconfig':
+      '@onebuffalolabs/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
       '@types/node':
@@ -152,10 +152,10 @@ importers:
         specifier: ^9.0.0
         version: 9.0.0
     devDependencies:
-      '@onebuffalo/eslint-config':
+      '@onebuffalolabs/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@onebuffalo/tsconfig':
+      '@onebuffalolabs/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
       '@types/node':

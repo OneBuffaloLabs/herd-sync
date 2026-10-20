@@ -1,5 +1,5 @@
 {
-  "extends": "@onebuffalo/tsconfig/base.json",
+  "extends": "@onebuffalolabs/tsconfig/base.json",
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",

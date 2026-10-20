@@ -1,5 +1,5 @@
 {
-  "name": "@onebuffalo/herd-sync",
+  "name": "@onebuffalolabs/herd-sync",
   "version": "0.1.0",
   "description": "Modular local-first sync toolkit for static Next.js applications",
   "main": "./dist/index.js",
@@ -30,8 +30,8 @@
     "pouchdb-browser": "^9.0.0"
   },
   "devDependencies": {
-    "@onebuffalo/eslint-config": "workspace:*",
-    "@onebuffalo/tsconfig": "workspace:*",
+    "@onebuffalolabs/eslint-config": "workspace:*",
+    "@onebuffalolabs/tsconfig": "workspace:*",
     "@types/node": "^22.0.0",
     "@types/pouchdb": "^6.4.2",
     "@types/pouchdb-browser": "^6.1.5",
