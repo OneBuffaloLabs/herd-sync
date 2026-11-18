@@ -6,6 +6,7 @@ out
 *.tsbuildinfo
 .DS_Store
 .env*.local
+AGENTS.md
 
 # Local CouchDB test server artifacts
 config.json

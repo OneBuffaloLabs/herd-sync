@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import PouchDB from "pouchdb-browser";
 import type { HerdDoc, PouchDBCtor } from "@onebuffalolabs/herd-sync";
-import { WebRTCAdapter } from "@/WebRTCAdapter";
+import { WebRTCAdapter, pruneSDP } from "@/WebRTCAdapter";
+import { compressSDP } from "@/signaling/qr";
 
 interface ItemDoc extends HerdDoc {
   name: string;
@@ -73,5 +74,91 @@ describe("WebRTCAdapter Conflict Resolution & Ingestion", () => {
 
     const currentDoc = await db.get("conflict_item_2");
     expect(currentDoc.name).toBe("Newer Remote Winner");
+  });
+});
+
+describe("pruneSDP", () => {
+  it("removes m=audio and m=video sections, updates BUNDLE, and strips codec/trickle-ICE attributes", () => {
+    const bloatedSdp = [
+      "v=0",
+      "o=- 4611731400430051336 2 IN IP4 127.0.0.1",
+      "s=-",
+      "t=0 0",
+      "a=group:BUNDLE 0 1 2",
+      "a=extmap-allow-mixed",
+      "a=msid-semantic: WMS stream1",
+      "m=audio 9 UDP/TLS/RTP/SAVPF 111 103",
+      "c=IN IP4 0.0.0.0",
+      "a=rtpmap:111 opus/48000/2",
+      "a=fmtp:111 minptime=10;useinbandfec=1",
+      "a=rtcp-fb:111 transport-cc",
+      "a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level",
+      "a=mid:0",
+      "a=ssrc:12345 cname:audio",
+      "m=video 9 UDP/TLS/RTP/SAVPF 96",
+      "c=IN IP4 0.0.0.0",
+      "a=rtpmap:96 VP8/90000",
+      "a=mid:1",
+      "m=application 9 UDP/DTLS/SCTP webrtc-datachannel",
+      "c=IN IP4 0.0.0.0",
+      "a=ice-ufrag:x8F2",
+      "a=ice-pwd:9gYhK20V12p0bLMNpq78abcdef",
+      "a=ice-options:trickle",
+      "a=fingerprint:sha-256 00:11:22:33",
+      "a=setup:actpass",
+      "a=mid:2",
+      "a=sctp-port:5000",
+      "a=max-message-size:262144",
+      "a=end-of-candidates"
+    ].join("\r\n");
+
+    const pruned = pruneSDP(bloatedSdp);
+
+    expect(pruned).not.toContain("m=audio");
+    expect(pruned).not.toContain("m=video");
+    expect(pruned).not.toContain("a=rtpmap:");
+    expect(pruned).not.toContain("a=fmtp:");
+    expect(pruned).not.toContain("a=rtcp-fb:");
+    expect(pruned).not.toContain("a=extmap:");
+    expect(pruned).not.toContain("a=extmap-allow-mixed");
+    expect(pruned).not.toContain("a=ssrc:");
+    expect(pruned).not.toContain("a=msid-semantic:");
+    expect(pruned).not.toContain("a=ice-options:trickle");
+    expect(pruned).not.toContain("a=end-of-candidates");
+
+    expect(pruned).toContain("a=group:BUNDLE 2");
+    expect(pruned).toContain("m=application 9 UDP/DTLS/SCTP webrtc-datachannel");
+    expect(pruned).toContain("a=ice-ufrag:x8F2");
+    expect(pruned).toContain("a=ice-pwd:9gYhK20V12p0bLMNpq78abcdef");
+    expect(pruned).toContain("a=fingerprint:sha-256 00:11:22:33");
+    expect(pruned).toContain("a=sctp-port:5000");
+    expect(compressSDP(pruned).length).toBeLessThan(compressSDP(bloatedSdp).length);
+  });
+
+  it("keeps UDP host and primary srflx candidates while dropping TCP, relay, prflx, and extra srflx", () => {
+    const sdpWithCandidates = [
+      "v=0",
+      "o=- 1 2 IN IP4 127.0.0.1",
+      "s=-",
+      "t=0 0",
+      "m=application 9 UDP/DTLS/SCTP webrtc-datachannel",
+      "a=candidate:1 1 UDP 2122260223 192.168.1.150 54123 typ host",
+      "a=candidate:2 1 TCP 1518280447 192.168.1.150 9 typ host tcptype active",
+      "a=candidate:3 1 UDP 1686052607 198.51.100.45 54125 typ srflx raddr 192.168.1.150 rport 54123",
+      "a=candidate:4 1 UDP 1686052606 198.51.100.46 54126 typ srflx raddr 10.0.0.12 rport 54124",
+      "a=candidate:5 1 UDP 41885439 203.0.113.10 54127 typ relay raddr 198.51.100.45 rport 54125",
+      "a=candidate:6 1 UDP 1853824767 198.51.100.99 54128 typ prflx raddr 192.168.1.150 rport 54123"
+    ].join("\r\n");
+
+    const pruned = pruneSDP(sdpWithCandidates);
+
+    expect(pruned).toContain("a=candidate:1 1 UDP 2122260223 192.168.1.150 54123 typ host");
+    expect(pruned).toContain(
+      "a=candidate:3 1 UDP 1686052607 198.51.100.45 54125 typ srflx raddr 192.168.1.150 rport 54123"
+    );
+    expect(pruned).not.toContain("TCP");
+    expect(pruned).not.toContain("a=candidate:4");
+    expect(pruned).not.toContain("typ relay");
+    expect(pruned).not.toContain("typ prflx");
   });
 });

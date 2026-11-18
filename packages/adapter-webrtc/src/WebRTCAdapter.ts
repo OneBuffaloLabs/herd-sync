@@ -7,6 +7,131 @@ import type { HerdDoc, HerdSyncStatus, SyncAdapter } from "@onebuffalolabs/herd-
 // --- Types ---
 import type { SyncPayload } from "@/types";
 
+const UNUSED_SDP_PREFIXES = [
+  "a=rtpmap:",
+  "a=fmtp:",
+  "a=rtcp-fb:",
+  "a=rtcp-mux",
+  "a=rtcp-rsize",
+  "a=extmap:",
+  "a=extmap-allow-mixed",
+  "a=ssrc:",
+  "a=ssrc-group:",
+  "a=msid:",
+  "a=msid-semantic:",
+  "a=end-of-candidates"
+];
+
+/**
+ * Filters an SDP string to remove non-data-channel media sections, unused codec/trickle-ICE
+ * attributes, and redundant ICE candidates so the resulting QR payload stays compact.
+ */
+export function pruneSDP(sdp: string): string {
+  if (!sdp) return sdp;
+
+  const hasTrailingNewline = sdp.endsWith("\n");
+  const rawLines = sdp.split(/\r?\n/);
+  if (hasTrailingNewline && rawLines[rawLines.length - 1] === "") {
+    rawLines.pop();
+  }
+
+  const sessionLines: string[] = [];
+  const mediaSections: { type: string; mid: string | null; lines: string[] }[] = [];
+  let currentSection: { type: string; mid: string | null; lines: string[] } | null = null;
+
+  for (const line of rawLines) {
+    if (line.startsWith("m=")) {
+      const mediaType = line.slice(2).split(/\s+/)[0] ?? "";
+      currentSection = { type: mediaType, mid: null, lines: [line] };
+      mediaSections.push(currentSection);
+    } else if (currentSection) {
+      if (line.startsWith("a=mid:")) {
+        currentSection.mid = line.slice("a=mid:".length).trim();
+      }
+      currentSection.lines.push(line);
+    } else {
+      sessionLines.push(line);
+    }
+  }
+
+  const keptSections = mediaSections.filter(
+    (section) => section.type !== "audio" && section.type !== "video"
+  );
+  const keptMids = new Set(keptSections.map((s) => s.mid).filter((m): m is string => Boolean(m)));
+
+  const candidateState = { hasSrflx: false };
+
+  const filterLine = (line: string): string | null => {
+    if (!line) return null;
+
+    if (line.startsWith("a=group:BUNDLE ") && keptMids.size > 0) {
+      const mids = line
+        .slice("a=group:BUNDLE ".length)
+        .trim()
+        .split(/\s+/)
+        .filter((mid) => keptMids.has(mid));
+      return mids.length > 0 ? `a=group:BUNDLE ${mids.join(" ")}` : null;
+    }
+
+    if (line.startsWith("a=ice-options:")) {
+      const options = line
+        .slice("a=ice-options:".length)
+        .trim()
+        .split(/\s+/)
+        .filter((opt) => opt !== "trickle");
+      return options.length > 0 ? `a=ice-options:${options.join(" ")}` : null;
+    }
+
+    if (UNUSED_SDP_PREFIXES.some((prefix) => line.startsWith(prefix))) {
+      return null;
+    }
+
+    if (line.startsWith("a=candidate:")) {
+      const parts = line.split(/\s+/);
+      const protocol = parts[2]?.toLowerCase();
+      if (protocol !== "udp") {
+        return null;
+      }
+
+      const typIndex = parts.indexOf("typ");
+      const candidateType = typIndex !== -1 ? parts[typIndex + 1] : undefined;
+
+      if (candidateType === "host") {
+        return line;
+      }
+      if (candidateType === "srflx") {
+        if (candidateState.hasSrflx) {
+          return null;
+        }
+        candidateState.hasSrflx = true;
+        return line;
+      }
+      return null;
+    }
+
+    return line;
+  };
+
+  const resultLines: string[] = [];
+  for (const line of sessionLines) {
+    const filtered = filterLine(line);
+    if (filtered !== null) {
+      resultLines.push(filtered);
+    }
+  }
+  for (const section of keptSections) {
+    for (const line of section.lines) {
+      const filtered = filterLine(line);
+      if (filtered !== null) {
+        resultLines.push(filtered);
+      }
+    }
+  }
+
+  const joined = resultLines.join("\r\n");
+  return hasTrailingNewline && joined.length > 0 ? `${joined}\r\n` : joined;
+}
+
 /**
  * Zero-backend WebRTC peer synchronization adapter streaming PouchDB updates across RTCDataChannels.
  */
@@ -115,7 +240,7 @@ export class WebRTCAdapter<T extends HerdDoc = HerdDoc> implements SyncAdapter {
 
     this.peerConnection.onicecandidate = (event) => {
       if (!event.candidate && this.peerConnection?.localDescription) {
-        this.onOfferCreated?.(this.peerConnection.localDescription.sdp);
+        this.onOfferCreated?.(pruneSDP(this.peerConnection.localDescription.sdp));
       }
     };
 
@@ -133,7 +258,7 @@ export class WebRTCAdapter<T extends HerdDoc = HerdDoc> implements SyncAdapter {
 
     this.peerConnection.onicecandidate = (event) => {
       if (!event.candidate && this.peerConnection?.localDescription) {
-        this.onAnswerCreated?.(this.peerConnection.localDescription.sdp);
+        this.onAnswerCreated?.(pruneSDP(this.peerConnection.localDescription.sdp));
       }
     };
 

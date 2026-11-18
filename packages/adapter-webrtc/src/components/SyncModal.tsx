@@ -26,8 +26,42 @@ export interface SyncModalProps {
 export function SyncModal({ adapter, onClose }: SyncModalProps) {
   const [step, setStep] = useState<SyncStep>("SELECT");
   const [qrPayload, setQrPayload] = useState<string>("");
+  const [copied, setCopied] = useState<boolean>(false);
+  const [manualPayload, setManualPayload] = useState<string>("");
+  const [manualError, setManualError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const handleCopyPayload = async () => {
+    if (!qrPayload) return;
+    try {
+      await navigator.clipboard.writeText(qrPayload);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API unavailable; user can still select and copy from the textarea
+    }
+  };
+
+  const handleManualConnect = () => {
+    const trimmed = manualPayload.trim();
+    if (!trimmed) {
+      setManualError("Paste a pairing snippet first.");
+      return;
+    }
+    const decompressed = decompressSDP(trimmed);
+    if (!decompressed) {
+      setManualError("Invalid pairing snippet.");
+      return;
+    }
+    setManualError(null);
+    setManualPayload("");
+    if (step === "JOIN_SCAN_QR") {
+      void adapter.join(decompressed);
+    } else if (step === "HOST_SCAN_QR") {
+      void adapter.complete(decompressed);
+    }
+  };
 
   useEffect(() => {
     adapter.onOfferCreated = (sdp: string) => {
@@ -144,8 +178,10 @@ export function SyncModal({ adapter, onClose }: SyncModalProps) {
           backgroundColor: "#fff",
           padding: "2rem",
           borderRadius: "12px",
-          maxWidth: "420px",
+          maxWidth: "460px",
           width: "90%",
+          maxHeight: "90vh",
+          overflowY: "auto",
           textAlign: "center"
         }}
       >
@@ -182,11 +218,49 @@ export function SyncModal({ adapter, onClose }: SyncModalProps) {
         {(step === "HOST_SHOW_QR" || step === "JOIN_SHOW_QR") && (
           <div>
             <h2>{step === "HOST_SHOW_QR" ? "Scan with Device B" : "Scan with Device A"}</h2>
-            <div style={{ padding: "1rem", display: "inline-block", margin: "1rem 0" }}>
-              <QRCodeSVG value={qrPayload} size={250} level="L" includeMargin />
+            <div style={{ padding: "1rem", display: "inline-block", margin: "0.75rem 0" }}>
+              <QRCodeSVG value={qrPayload} size={320} level="L" includeMargin />
+            </div>
+            <div style={{ margin: "0.75rem 0", textAlign: "left" }}>
+              <label
+                htmlFor="herd-sync-qr-snippet"
+                style={{
+                  display: "block",
+                  fontSize: "0.85rem",
+                  fontWeight: 600,
+                  marginBottom: "0.25rem"
+                }}
+              >
+                Or copy pairing snippet:
+              </label>
+              <div style={{ display: "flex", gap: "0.5rem", alignItems: "stretch" }}>
+                <textarea
+                  id="herd-sync-qr-snippet"
+                  readOnly
+                  value={qrPayload}
+                  rows={2}
+                  onFocus={(e) => e.currentTarget.select()}
+                  style={{
+                    flex: 1,
+                    fontSize: "0.75rem",
+                    fontFamily: "monospace",
+                    padding: "0.4rem",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc",
+                    resize: "none"
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => void handleCopyPayload()}
+                  style={{ padding: "0.4rem 0.75rem", cursor: "pointer", whiteSpace: "nowrap" }}
+                >
+                  {copied ? "Copied!" : "Copy"}
+                </button>
+              </div>
             </div>
             {step === "HOST_SHOW_QR" && (
-              <div>
+              <div style={{ marginTop: "0.75rem" }}>
                 <button
                   type="button"
                   onClick={() => setStep("HOST_SCAN_QR")}
@@ -225,6 +299,49 @@ export function SyncModal({ adapter, onClose }: SyncModalProps) {
                 }}
               />
               <canvas ref={canvasRef} style={{ display: "none" }} />
+            </div>
+            <div style={{ margin: "0.75rem 0", textAlign: "left" }}>
+              <label
+                htmlFor="herd-sync-paste-snippet"
+                style={{
+                  display: "block",
+                  fontSize: "0.85rem",
+                  fontWeight: 600,
+                  marginBottom: "0.25rem"
+                }}
+              >
+                Or paste pairing snippet:
+              </label>
+              <div style={{ display: "flex", gap: "0.5rem", alignItems: "stretch" }}>
+                <textarea
+                  id="herd-sync-paste-snippet"
+                  value={manualPayload}
+                  onChange={(e) => setManualPayload(e.target.value)}
+                  placeholder="Paste compressed SDP snippet..."
+                  rows={2}
+                  style={{
+                    flex: 1,
+                    fontSize: "0.75rem",
+                    fontFamily: "monospace",
+                    padding: "0.4rem",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc",
+                    resize: "none"
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={handleManualConnect}
+                  style={{ padding: "0.4rem 0.75rem", cursor: "pointer", whiteSpace: "nowrap" }}
+                >
+                  Connect
+                </button>
+              </div>
+              {manualError && (
+                <p style={{ color: "#c62828", fontSize: "0.8rem", marginTop: "0.25rem" }}>
+                  {manualError}
+                </p>
+              )}
             </div>
           </div>
         )}
