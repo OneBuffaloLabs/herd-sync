@@ -11,26 +11,39 @@ import { QRCodeSVG } from "qrcode.react";
 import type { HerdSyncStatus } from "@onebuffalolabs/herd-sync";
 
 // --- Signaling & Adapter ---
-import { compressSDP, decompressSDP } from "@/signaling/qr";
+import {
+  buildMailtoHref,
+  buildPairingUrl,
+  buildSmsHref,
+  compressSDP,
+  decompressSDP,
+  extractPairingPayload
+} from "@/signaling/qr";
 import type { SyncStep } from "@/types";
 import { WebRTCAdapter } from "@/WebRTCAdapter";
 
 export interface SyncModalProps {
   adapter: WebRTCAdapter;
   onClose: () => void;
+  initialPairingPayload?: string | null;
 }
 
 /**
  * QR Code based signaling dialog for establishing zero-backend WebRTC synchronization.
  */
-export function SyncModal({ adapter, onClose }: SyncModalProps) {
+export function SyncModal({ adapter, onClose, initialPairingPayload }: SyncModalProps) {
   const [step, setStep] = useState<SyncStep>("SELECT");
   const [qrPayload, setQrPayload] = useState<string>("");
   const [copied, setCopied] = useState<boolean>(false);
+  const [copiedLink, setCopiedLink] = useState<boolean>(false);
+  const [recipientEmail, setRecipientEmail] = useState<string>("");
   const [manualPayload, setManualPayload] = useState<string>("");
   const [manualError, setManualError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const pairingUrl = qrPayload ? buildPairingUrl(qrPayload) : "";
+  const canNativeShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
 
   const handleCopyPayload = async () => {
     if (!qrPayload) return;
@@ -43,15 +56,39 @@ export function SyncModal({ adapter, onClose }: SyncModalProps) {
     }
   };
 
+  const handleCopyLink = async () => {
+    if (!pairingUrl) return;
+    try {
+      await navigator.clipboard.writeText(pairingUrl);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    } catch {
+      // Clipboard API unavailable
+    }
+  };
+
+  const handleNativeShare = async () => {
+    if (!pairingUrl || !canNativeShare) return;
+    try {
+      await navigator.share({
+        title: "HerdSync Device Pairing",
+        text: "Open this link on your other device to pair:",
+        url: pairingUrl
+      });
+    } catch {
+      // Share cancelled or unavailable
+    }
+  };
+
   const handleManualConnect = () => {
-    const trimmed = manualPayload.trim();
-    if (!trimmed) {
-      setManualError("Paste a pairing snippet first.");
+    const extracted = extractPairingPayload(manualPayload);
+    if (!extracted) {
+      setManualError("Paste a pairing snippet or link first.");
       return;
     }
-    const decompressed = decompressSDP(trimmed);
+    const decompressed = decompressSDP(extracted);
     if (!decompressed) {
-      setManualError("Invalid pairing snippet.");
+      setManualError("Invalid pairing snippet or link.");
       return;
     }
     setManualError(null);
@@ -83,6 +120,21 @@ export function SyncModal({ adapter, onClose }: SyncModalProps) {
       unsubscribe();
     };
   }, [adapter]);
+
+  useEffect(() => {
+    const rawSource =
+      initialPairingPayload ?? (typeof window !== "undefined" ? window.location.hash : "");
+    const extracted = rawSource ? extractPairingPayload(rawSource) : null;
+    if (!extracted) return;
+
+    const decompressed = decompressSDP(extracted);
+    if (!decompressed) return;
+
+    if (!initialPairingPayload && typeof window !== "undefined" && window.location.hash) {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+    void adapter.join(decompressed);
+  }, [adapter, initialPairingPayload]);
 
   useEffect(() => {
     let animationFrameId: number;
@@ -133,7 +185,8 @@ export function SyncModal({ adapter, onClose }: SyncModalProps) {
       });
 
       if (code && code.data) {
-        const decompressed = decompressSDP(code.data);
+        const extracted = extractPairingPayload(code.data);
+        const decompressed = extracted ? decompressSDP(extracted) : null;
         if (decompressed) {
           if (step === "JOIN_SCAN_QR") {
             void adapter.join(decompressed);
@@ -257,6 +310,83 @@ export function SyncModal({ adapter, onClose }: SyncModalProps) {
                 >
                   {copied ? "Copied!" : "Copy"}
                 </button>
+              </div>
+            </div>
+            <div style={{ margin: "0.75rem 0", textAlign: "left" }}>
+              <label
+                htmlFor="herd-sync-email-input"
+                style={{
+                  display: "block",
+                  fontSize: "0.85rem",
+                  fontWeight: 600,
+                  marginBottom: "0.25rem"
+                }}
+              >
+                Send pairing link via email or text:
+              </label>
+              <input
+                id="herd-sync-email-input"
+                type="email"
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+                placeholder="Optional email address..."
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  fontSize: "0.8rem",
+                  padding: "0.4rem",
+                  borderRadius: "6px",
+                  border: "1px solid #ccc",
+                  marginBottom: "0.5rem"
+                }}
+              />
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  onClick={() => void handleCopyLink()}
+                  style={{ flex: 1, padding: "0.4rem 0.6rem", cursor: "pointer" }}
+                >
+                  {copiedLink ? "Link Copied!" : "Copy Link"}
+                </button>
+                <a
+                  href={buildMailtoHref(pairingUrl, recipientEmail)}
+                  style={{
+                    flex: 1,
+                    padding: "0.4rem 0.6rem",
+                    border: "1px solid #ccc",
+                    borderRadius: "4px",
+                    textDecoration: "none",
+                    color: "inherit",
+                    textAlign: "center",
+                    fontSize: "0.85rem"
+                  }}
+                >
+                  Email
+                </a>
+                <a
+                  href={buildSmsHref(pairingUrl)}
+                  style={{
+                    flex: 1,
+                    padding: "0.4rem 0.6rem",
+                    border: "1px solid #ccc",
+                    borderRadius: "4px",
+                    textDecoration: "none",
+                    color: "inherit",
+                    textAlign: "center",
+                    fontSize: "0.85rem"
+                  }}
+                >
+                  Text
+                </a>
+                {canNativeShare && (
+                  <button
+                    type="button"
+                    onClick={() => void handleNativeShare()}
+                    style={{ flex: 1, padding: "0.4rem 0.6rem", cursor: "pointer" }}
+                  >
+                    Share
+                  </button>
+                )}
               </div>
             </div>
             {step === "HOST_SHOW_QR" && (
