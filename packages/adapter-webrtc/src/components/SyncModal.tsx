@@ -22,16 +22,54 @@ import {
 import type { SyncStep } from "@/types";
 import { WebRTCAdapter } from "@/WebRTCAdapter";
 
+export interface SyncModalClassNames {
+  overlay?: string;
+  dialog?: string;
+  heading?: string;
+  text?: string;
+  primaryButton?: string;
+  secondaryButton?: string;
+  input?: string;
+  qrContainer?: string;
+  closeButton?: string;
+  errorText?: string;
+  successHeading?: string;
+}
+
+export interface SyncModalColors {
+  overlay?: string;
+  background?: string;
+  text?: string;
+  border?: string;
+  primary?: string;
+  primaryText?: string;
+  secondary?: string;
+  secondaryText?: string;
+  inputBackground?: string;
+  qrBackground?: string;
+  qrForeground?: string;
+  success?: string;
+  error?: string;
+}
+
 export interface SyncModalProps {
   adapter: WebRTCAdapter;
   onClose: () => void;
   initialPairingPayload?: string | null;
+  classNames?: SyncModalClassNames;
+  colors?: SyncModalColors;
 }
 
 /**
  * QR Code based signaling dialog for establishing zero-backend WebRTC synchronization.
  */
-export function SyncModal({ adapter, onClose, initialPairingPayload }: SyncModalProps) {
+export function SyncModal({
+  adapter,
+  onClose,
+  initialPairingPayload,
+  classNames,
+  colors
+}: SyncModalProps) {
   const [step, setStep] = useState<SyncStep>("SELECT");
   const [qrPayload, setQrPayload] = useState<string>("");
   const [copied, setCopied] = useState<boolean>(false);
@@ -211,37 +249,88 @@ export function SyncModal({ adapter, onClose, initialPairingPayload }: SyncModal
     };
   }, [step, adapter]);
 
+  const overlayStyle: React.CSSProperties = {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999,
+    ...(colors?.overlay || !classNames?.overlay
+      ? { backgroundColor: colors?.overlay ?? "rgba(0, 0, 0, 0.8)" }
+      : {})
+  };
+
+  const dialogStyle: React.CSSProperties = {
+    padding: "2rem",
+    borderRadius: "12px",
+    maxWidth: "460px",
+    width: "90%",
+    maxHeight: "90vh",
+    overflowY: "auto",
+    textAlign: "center",
+    ...(colors?.background || !classNames?.dialog
+      ? { backgroundColor: colors?.background ?? "#fff" }
+      : {}),
+    ...(colors?.text ? { color: colors.text } : {})
+  };
+
+  const primaryBtnStyle: React.CSSProperties = {
+    padding: "0.5rem 1rem",
+    cursor: "pointer",
+    ...(colors?.primary ? { backgroundColor: colors.primary } : {}),
+    ...(colors?.primaryText ? { color: colors.primaryText } : {})
+  };
+
+  const secondaryBtnStyle: React.CSSProperties = {
+    padding: "0.4rem 0.6rem",
+    cursor: "pointer",
+    ...(colors?.secondary ? { backgroundColor: colors.secondary } : {}),
+    ...(colors?.secondaryText ? { color: colors.secondaryText } : {}),
+    ...(colors?.border ? { borderColor: colors.border } : {})
+  };
+
+  const inputStyle: React.CSSProperties = {
+    fontSize: "0.8rem",
+    padding: "0.4rem",
+    borderRadius: "6px",
+    ...(colors?.border || !classNames?.input
+      ? { border: `1px solid ${colors?.border ?? "#ccc"}` }
+      : {}),
+    ...(colors?.inputBackground ? { backgroundColor: colors.inputBackground } : {}),
+    ...(colors?.text ? { color: colors.text } : {})
+  };
+
+  const linkBtnStyle: React.CSSProperties = {
+    flex: 1,
+    padding: "0.4rem 0.6rem",
+    borderRadius: "4px",
+    textDecoration: "none",
+    textAlign: "center",
+    fontSize: "0.85rem",
+    ...(colors?.border || !classNames?.secondaryButton
+      ? { border: `1px solid ${colors?.border ?? "#ccc"}` }
+      : {}),
+    ...(colors?.secondary ? { backgroundColor: colors.secondary } : {}),
+    ...(colors?.secondaryText || !classNames?.secondaryButton
+      ? { color: colors?.secondaryText ?? "inherit" }
+      : {})
+  };
+
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 9999
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: "#fff",
-          padding: "2rem",
-          borderRadius: "12px",
-          maxWidth: "460px",
-          width: "90%",
-          maxHeight: "90vh",
-          overflowY: "auto",
-          textAlign: "center"
-        }}
-      >
+    <div id="herd-sync-overlay" className={classNames?.overlay} style={overlayStyle}>
+      <div id="herd-sync-dialog" className={classNames?.dialog} style={dialogStyle}>
         {step === "SELECT" && (
           <div>
-            <h2>P2P Device Sync</h2>
-            <p>Select your connection role for this device.</p>
+            <h2 id="herd-sync-select-heading" className={classNames?.heading}>
+              P2P Device Sync
+            </h2>
+            <p id="herd-sync-select-text" className={classNames?.text}>
+              Select your connection role for this device.
+            </p>
             <div
               style={{
                 display: "flex",
@@ -251,16 +340,20 @@ export function SyncModal({ adapter, onClose, initialPairingPayload }: SyncModal
               }}
             >
               <button
+                id="herd-sync-host-btn"
                 type="button"
+                className={classNames?.primaryButton}
                 onClick={() => void adapter.host()}
-                style={{ padding: "0.5rem 1rem", cursor: "pointer" }}
+                style={primaryBtnStyle}
               >
                 Host (Device A)
               </button>
               <button
+                id="herd-sync-join-btn"
                 type="button"
+                className={classNames?.secondaryButton}
                 onClick={() => setStep("JOIN_SCAN_QR")}
-                style={{ padding: "0.5rem 1rem", cursor: "pointer" }}
+                style={primaryBtnStyle}
               >
                 Join (Device B)
               </button>
@@ -270,13 +363,32 @@ export function SyncModal({ adapter, onClose, initialPairingPayload }: SyncModal
 
         {(step === "HOST_SHOW_QR" || step === "JOIN_SHOW_QR") && (
           <div>
-            <h2>{step === "HOST_SHOW_QR" ? "Scan with Device B" : "Scan with Device A"}</h2>
-            <div style={{ padding: "1rem", display: "inline-block", margin: "0.75rem 0" }}>
-              <QRCodeSVG value={qrPayload} size={320} level="L" includeMargin />
+            <h2 id="herd-sync-qr-heading" className={classNames?.heading}>
+              {step === "HOST_SHOW_QR" ? "Scan with Device B" : "Scan with Device A"}
+            </h2>
+            <div
+              id="herd-sync-qr-container"
+              className={classNames?.qrContainer}
+              style={{
+                padding: "1rem",
+                display: "inline-block",
+                margin: "0.75rem 0",
+                ...(colors?.qrBackground ? { backgroundColor: colors.qrBackground } : {})
+              }}
+            >
+              <QRCodeSVG
+                value={qrPayload}
+                size={320}
+                level="L"
+                includeMargin
+                bgColor={colors?.qrBackground ?? "#FFFFFF"}
+                fgColor={colors?.qrForeground ?? "#000000"}
+              />
             </div>
             <div style={{ margin: "0.75rem 0", textAlign: "left" }}>
               <label
                 htmlFor="herd-sync-qr-snippet"
+                className={classNames?.text}
                 style={{
                   display: "block",
                   fontSize: "0.85rem",
@@ -292,21 +404,22 @@ export function SyncModal({ adapter, onClose, initialPairingPayload }: SyncModal
                   readOnly
                   value={qrPayload}
                   rows={2}
+                  className={classNames?.input}
                   onFocus={(e) => e.currentTarget.select()}
                   style={{
+                    ...inputStyle,
                     flex: 1,
                     fontSize: "0.75rem",
                     fontFamily: "monospace",
-                    padding: "0.4rem",
-                    borderRadius: "6px",
-                    border: "1px solid #ccc",
                     resize: "none"
                   }}
                 />
                 <button
+                  id="herd-sync-copy-snippet-btn"
                   type="button"
+                  className={classNames?.secondaryButton}
                   onClick={() => void handleCopyPayload()}
-                  style={{ padding: "0.4rem 0.75rem", cursor: "pointer", whiteSpace: "nowrap" }}
+                  style={{ ...secondaryBtnStyle, whiteSpace: "nowrap" }}
                 >
                   {copied ? "Copied!" : "Copy"}
                 </button>
@@ -315,6 +428,7 @@ export function SyncModal({ adapter, onClose, initialPairingPayload }: SyncModal
             <div style={{ margin: "0.75rem 0", textAlign: "left" }}>
               <label
                 htmlFor="herd-sync-email-input"
+                className={classNames?.text}
                 style={{
                   display: "block",
                   fontSize: "0.85rem",
@@ -330,59 +444,47 @@ export function SyncModal({ adapter, onClose, initialPairingPayload }: SyncModal
                 value={recipientEmail}
                 onChange={(e) => setRecipientEmail(e.target.value)}
                 placeholder="Optional email address..."
+                className={classNames?.input}
                 style={{
+                  ...inputStyle,
                   width: "100%",
                   boxSizing: "border-box",
-                  fontSize: "0.8rem",
-                  padding: "0.4rem",
-                  borderRadius: "6px",
-                  border: "1px solid #ccc",
                   marginBottom: "0.5rem"
                 }}
               />
               <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                 <button
+                  id="herd-sync-copy-link-btn"
                   type="button"
+                  className={classNames?.secondaryButton}
                   onClick={() => void handleCopyLink()}
-                  style={{ flex: 1, padding: "0.4rem 0.6rem", cursor: "pointer" }}
+                  style={{ ...secondaryBtnStyle, flex: 1 }}
                 >
                   {copiedLink ? "Link Copied!" : "Copy Link"}
                 </button>
                 <a
+                  id="herd-sync-email-link"
                   href={buildMailtoHref(pairingUrl, recipientEmail)}
-                  style={{
-                    flex: 1,
-                    padding: "0.4rem 0.6rem",
-                    border: "1px solid #ccc",
-                    borderRadius: "4px",
-                    textDecoration: "none",
-                    color: "inherit",
-                    textAlign: "center",
-                    fontSize: "0.85rem"
-                  }}
+                  className={classNames?.secondaryButton}
+                  style={linkBtnStyle}
                 >
                   Email
                 </a>
                 <a
+                  id="herd-sync-sms-link"
                   href={buildSmsHref(pairingUrl)}
-                  style={{
-                    flex: 1,
-                    padding: "0.4rem 0.6rem",
-                    border: "1px solid #ccc",
-                    borderRadius: "4px",
-                    textDecoration: "none",
-                    color: "inherit",
-                    textAlign: "center",
-                    fontSize: "0.85rem"
-                  }}
+                  className={classNames?.secondaryButton}
+                  style={linkBtnStyle}
                 >
                   Text
                 </a>
                 {canNativeShare && (
                   <button
+                    id="herd-sync-share-btn"
                     type="button"
+                    className={classNames?.secondaryButton}
                     onClick={() => void handleNativeShare()}
-                    style={{ flex: 1, padding: "0.4rem 0.6rem", cursor: "pointer" }}
+                    style={{ ...secondaryBtnStyle, flex: 1 }}
                   >
                     Share
                   </button>
@@ -392,9 +494,11 @@ export function SyncModal({ adapter, onClose, initialPairingPayload }: SyncModal
             {step === "HOST_SHOW_QR" && (
               <div style={{ marginTop: "0.75rem" }}>
                 <button
+                  id="herd-sync-scanned-btn"
                   type="button"
+                  className={classNames?.primaryButton}
                   onClick={() => setStep("HOST_SCAN_QR")}
-                  style={{ padding: "0.5rem 1rem", cursor: "pointer" }}
+                  style={primaryBtnStyle}
                 >
                   I scanned this on Device B
                 </button>
@@ -405,8 +509,11 @@ export function SyncModal({ adapter, onClose, initialPairingPayload }: SyncModal
 
         {(step === "HOST_SCAN_QR" || step === "JOIN_SCAN_QR") && (
           <div>
-            <h2>Scan Peer QR Code</h2>
+            <h2 id="herd-sync-scan-heading" className={classNames?.heading}>
+              Scan Peer QR Code
+            </h2>
             <div
+              id="herd-sync-scanner-container"
               style={{
                 position: "relative",
                 width: "100%",
@@ -418,6 +525,7 @@ export function SyncModal({ adapter, onClose, initialPairingPayload }: SyncModal
               }}
             >
               <video
+                id="herd-sync-scanner-video"
                 ref={videoRef}
                 style={{
                   position: "absolute",
@@ -433,6 +541,7 @@ export function SyncModal({ adapter, onClose, initialPairingPayload }: SyncModal
             <div style={{ margin: "0.75rem 0", textAlign: "left" }}>
               <label
                 htmlFor="herd-sync-paste-snippet"
+                className={classNames?.text}
                 style={{
                   display: "block",
                   fontSize: "0.85rem",
@@ -449,26 +558,37 @@ export function SyncModal({ adapter, onClose, initialPairingPayload }: SyncModal
                   onChange={(e) => setManualPayload(e.target.value)}
                   placeholder="Paste compressed SDP snippet..."
                   rows={2}
+                  className={classNames?.input}
                   style={{
+                    ...inputStyle,
                     flex: 1,
                     fontSize: "0.75rem",
                     fontFamily: "monospace",
-                    padding: "0.4rem",
-                    borderRadius: "6px",
-                    border: "1px solid #ccc",
                     resize: "none"
                   }}
                 />
                 <button
+                  id="herd-sync-connect-btn"
                   type="button"
+                  className={classNames?.primaryButton}
                   onClick={handleManualConnect}
-                  style={{ padding: "0.4rem 0.75rem", cursor: "pointer", whiteSpace: "nowrap" }}
+                  style={{ ...primaryBtnStyle, padding: "0.4rem 0.75rem", whiteSpace: "nowrap" }}
                 >
                   Connect
                 </button>
               </div>
               {manualError && (
-                <p style={{ color: "#c62828", fontSize: "0.8rem", marginTop: "0.25rem" }}>
+                <p
+                  id="herd-sync-manual-error"
+                  className={classNames?.errorText}
+                  style={{
+                    fontSize: "0.8rem",
+                    marginTop: "0.25rem",
+                    ...(colors?.error || !classNames?.errorText
+                      ? { color: colors?.error ?? "#c62828" }
+                      : {})
+                  }}
+                >
                   {manualError}
                 </p>
               )}
@@ -478,15 +598,36 @@ export function SyncModal({ adapter, onClose, initialPairingPayload }: SyncModal
 
         {step === "CONNECTED" && (
           <div>
-            <h2 style={{ color: "#2e7d32" }}>Connected</h2>
-            <p>Direct peer-to-peer WebRTC link established.</p>
+            <h2
+              id="herd-sync-connected-heading"
+              className={classNames?.successHeading}
+              style={
+                colors?.success || !classNames?.successHeading
+                  ? { color: colors?.success ?? "#2e7d32" }
+                  : undefined
+              }
+            >
+              Connected
+            </h2>
+            <p id="herd-sync-connected-text" className={classNames?.text}>
+              Direct peer-to-peer WebRTC link established.
+            </p>
           </div>
         )}
 
         <button
+          id="herd-sync-close-btn"
           type="button"
+          className={classNames?.closeButton}
           onClick={onClose}
-          style={{ marginTop: "2rem", width: "100%", padding: "0.5rem", cursor: "pointer" }}
+          style={{
+            marginTop: "2rem",
+            width: "100%",
+            padding: "0.5rem",
+            cursor: "pointer",
+            ...(colors?.secondary ? { backgroundColor: colors.secondary } : {}),
+            ...(colors?.secondaryText ? { color: colors.secondaryText } : {})
+          }}
         >
           Close
         </button>
