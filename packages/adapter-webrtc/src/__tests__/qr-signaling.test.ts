@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { compressSDP, decompressSDP } from "@/signaling/qr";
+import {
+  buildMailtoHref,
+  buildPairingUrl,
+  buildSmsHref,
+  compressSDP,
+  decompressSDP,
+  extractPairingPayload
+} from "@/signaling/qr";
 
 describe("WebRTC QR Signaling SDP Compression", () => {
   // Realistic multi-line WebRTC offer payload (~2KB)
@@ -59,5 +66,29 @@ describe("WebRTC QR Signaling SDP Compression", () => {
     const compressed = compressSDP("");
     const decompressed = decompressSDP(compressed);
     expect(decompressed).toBe("");
+  });
+
+  it("should build and extract #pair= pairing URLs", () => {
+    const payload = compressSDP("v=0\r\ns=-");
+    const url = buildPairingUrl(payload, "https://example.com/sync");
+    expect(url).toBe(`https://example.com/sync#pair=${payload}`);
+    expect(extractPairingPayload(url)).toBe(payload);
+    expect(extractPairingPayload(`https://example.com/sync?pair=${payload}`)).toBe(payload);
+    expect(extractPairingPayload(`  ${payload}  `)).toBe(payload);
+    expect(extractPairingPayload("   ")).toBeNull();
+  });
+
+  it("should build mailto and sms URIs with encoded pairing URLs", () => {
+    const url = "https://example.com/#pair=abc123";
+    const mailto = buildMailtoHref(url, "peer@example.com");
+    expect(mailto).toContain("mailto:peer%40example.com?");
+    expect(mailto).toContain(encodeURIComponent(url));
+
+    const mailtoNoRecipient = buildMailtoHref(url);
+    expect(mailtoNoRecipient.startsWith("mailto:?")).toBe(true);
+
+    const sms = buildSmsHref(url);
+    expect(sms.startsWith("sms:?body=")).toBe(true);
+    expect(sms).toContain(encodeURIComponent(url));
   });
 });
