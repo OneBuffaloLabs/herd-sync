@@ -63,6 +63,38 @@ If your app checks `window.location.hash.includes("pair=")` on load and opens `S
 
 ---
 
+## Styling (`classNames` &amp; `colors`)
+
+Pass `classNames` for Tailwind CSS or custom classes, or `colors` for quick theme overrides:
+
+```tsx
+<SyncModal
+  adapter={adapter}
+  onClose={() => setOpen(false)}
+  colors={{
+    background: "#0f172a",
+    text: "#f8fafc",
+    primary: "#2563eb",
+    primaryText: "#ffffff",
+    border: "#334155",
+    inputBackground: "#1e293b"
+  }}
+  classNames={{
+    dialog: "shadow-2xl border border-slate-700",
+    primaryButton: "rounded-lg font-medium hover:opacity-90",
+    secondaryButton: "rounded-lg border border-slate-600 text-sm"
+  }}
+/>
+```
+
+Available `classNames` slots: `overlay`, `dialog`, `heading`, `text`, `primaryButton`, `secondaryButton`, `input`, `qrContainer`, `closeButton`, `errorText`, and `successHeading`.
+
+Available `colors` tokens: `overlay`, `background`, `text`, `border`, `primary`, `primaryText`, `secondary`, `secondaryText`, `inputBackground`, `qrBackground`, `qrForeground`, `success`, and `error`.
+
+Every key element also has a stable `herd-sync-*` ID (such as `#herd-sync-overlay`, `#herd-sync-dialog`, `#herd-sync-qr-container`, `#herd-sync-qr-snippet`, `#herd-sync-email-input`, `#herd-sync-paste-snippet`, and `#herd-sync-close-btn`) if you prefer targeting them directly in CSS.
+
+---
+
 ## Conflict Resolution
 
 WebRTC data streams synchronize without a central authority using Last-Write-Wins (LWW) conflict resolution. Whenever an incoming payload is received, the adapter compares the ISO 8601 string in `updatedAt` against the local revision. The record with the newer timestamp takes precedence.
