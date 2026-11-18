@@ -30,6 +30,10 @@ function PlaygroundInner() {
     webrtcAdapterRef.current = adapter;
     const unsubscribe = adapter.subscribe((s) => setWebrtcStatus(s.state));
 
+    if (typeof window !== "undefined" && window.location.hash.includes("pair=")) {
+      setIsModalOpen(true);
+    }
+
     return () => {
       unsubscribe();
       void adapter.stop();
