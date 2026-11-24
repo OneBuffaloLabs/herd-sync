@@ -29,6 +29,7 @@ const STATE_LABELS: Record<HerdSyncStatus["state"], string> = {
   connected: "P2P Connected",
   syncing: "Syncing...",
   paused: "Sync Paused",
+  disconnected: "Disconnected",
   error: "Sync Error",
   denied: "Sync Denied"
 };

@@ -2,7 +2,12 @@
 import type PouchDB from "pouchdb-browser";
 
 // --- HerdSync ---
-import type { HerdDoc, HerdSyncStatus, SyncAdapter } from "@onebuffalolabs/herd-sync";
+import type {
+  DisconnectReason,
+  HerdDoc,
+  HerdSyncStatus,
+  SyncAdapter
+} from "@onebuffalolabs/herd-sync";
 
 // --- Types ---
 import type {
@@ -273,13 +278,25 @@ export class WebRTCAdapter<T extends HerdDoc = HerdDoc> implements SyncAdapter {
     }
   }
 
-  public async stop(): Promise<void> {
+  public async stop(reason?: DisconnectReason): Promise<void> {
     this.closePeerResources();
     if (this.reconnectChannel) {
       this.reconnectChannel.close();
       this.reconnectChannel = null;
     }
-    this.updateStatus({ state: "idle" });
+    if (reason) {
+      this.updateStatus({ state: "disconnected", disconnectReason: reason });
+    } else {
+      this.updateStatus({ state: "idle", disconnectReason: null });
+    }
+  }
+
+  public async syncNow(): Promise<void> {
+    if (this.dataChannel?.readyState === "open") {
+      await this.beginReplication();
+      return;
+    }
+    await this.reconnect();
   }
 
   private setupReconnectChannel(peerId: string): void {
@@ -400,7 +417,9 @@ export class WebRTCAdapter<T extends HerdDoc = HerdDoc> implements SyncAdapter {
       }
     };
     this.dataChannel.onclose = () => {
-      this.updateStatus({ state: "idle" });
+      if (this.status.state !== "disconnected") {
+        this.updateStatus({ state: "disconnected", disconnectReason: "peer_closed" });
+      }
     };
   }
 

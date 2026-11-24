@@ -1,8 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import PouchDB from "pouchdb-browser";
-import { resolveDocConflicts } from "@/conflicts/resolver";
+import {
+  processDatabaseConflicts,
+  resolveDocConflicts
+} from "@/conflicts/resolver";
 import { createArrayMergeResolver, resolveLWW } from "@/conflicts/strategies";
-import type { HerdDoc, PouchDBCtor } from "@/types";
+import type { ConflictContext, HerdDoc, PouchDBCtor } from "@/types";
 
 interface TestNoteDoc extends HerdDoc {
   title: string;
@@ -193,5 +196,54 @@ describe("Conflict Resolution Engine", () => {
 
     expect(result).not.toBeNull();
     expect(result?.resolvedDoc.title).toBe("Local Safe State");
+  });
+
+  it("should invoke generic onConflict hook, write resolved doc, and prune losing revisions", async () => {
+    const docId = "generic_hook_doc";
+    await createConflictBranch(
+      docId,
+      { _id: docId, title: "Local Choice", content: "local", updatedAt: "2026-10-16T12:00:00.000Z" },
+      { _id: docId, title: "Remote Choice", content: "remote", updatedAt: "2026-10-16T11:00:00.000Z" }
+    );
+
+    const onConflict = vi.fn(async (ctx: ConflictContext<TestNoteDoc>): Promise<TestNoteDoc> => {
+      return {
+        ...ctx.localDoc,
+        title: `${ctx.localDoc.title} + ${ctx.remoteDoc.title}`
+      };
+    });
+
+    const unresolved = await processDatabaseConflicts(db, {
+      docIds: [docId],
+      onConflict
+    });
+
+    expect(unresolved).toEqual([]);
+    expect(onConflict).toHaveBeenCalledTimes(1);
+    const callArg = onConflict.mock.calls[0]?.[0];
+    expect(callArg?.docId).toBe(docId);
+    expect(callArg?.conflictingRevs.length).toBeGreaterThan(0);
+
+    const after = await db.get(docId, { conflicts: true });
+    expect(after.title).toContain("Local Choice");
+    expect(after.title).toContain("Remote Choice");
+    expect(after._conflicts).toBeUndefined();
+  });
+
+  it("should surface unresolved conflicts when no onConflict handler is provided", async () => {
+    const docId = "unresolved_hook_doc";
+    await createConflictBranch(
+      docId,
+      { _id: docId, title: "Winner", updatedAt: "2026-10-16T12:00:00.000Z" },
+      { _id: docId, title: "Loser", updatedAt: "2026-10-16T11:00:00.000Z" }
+    );
+
+    const unresolved = await processDatabaseConflicts(db);
+    expect(unresolved.length).toBe(1);
+    expect(unresolved[0]?.docId).toBe(docId);
+    expect(unresolved[0]?.conflictingRevs.length).toBeGreaterThan(0);
+
+    const docAfter = await db.get(docId, { conflicts: true });
+    expect(docAfter._conflicts?.length).toBeGreaterThan(0);
   });
 });

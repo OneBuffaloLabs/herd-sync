@@ -15,7 +15,20 @@ export type PouchDBCtor<T extends HerdDoc> = new (
  * Lifecycle connection state for the sync adapter.
  */
 export type SyncConnectionState =
-  "uninitialized" | "idle" | "connecting" | "connected" | "syncing" | "paused" | "error" | "denied";
+  | "uninitialized"
+  | "idle"
+  | "connecting"
+  | "connected"
+  | "syncing"
+  | "paused"
+  | "disconnected"
+  | "error"
+  | "denied";
+
+/**
+ * Reason why a sync session transitioned to a disconnected state.
+ */
+export type DisconnectReason = "idle" | "manual" | "peer_closed";
 
 /**
  * Base document shape managed by HerdSync.
@@ -58,17 +71,36 @@ export interface HerdSyncStatus {
   lastSyncedAt: string | null;
   pendingPushes: number;
   error: string | null;
+  disconnectReason?: DisconnectReason | null;
 }
 
 /**
  * Contract implemented by HerdSync storage adapters.
  */
 export interface SyncAdapter {
-  start(): void;
+  start(): void | Promise<void>;
   stop(): Promise<void>;
+  syncNow?(): Promise<void>;
   getStatus(): HerdSyncStatus;
   subscribe(callback: (status: HerdSyncStatus) => void): () => void;
 }
+
+/**
+ * Context passed to a host-supplied `onConflict` handler when a document has divergent revisions.
+ */
+export interface ConflictContext<T extends Record<string, unknown> = Record<string, unknown>> {
+  docId: string;
+  localDoc: T & { _id: string; _rev: string };
+  remoteDoc: T & { _id: string; _rev: string };
+  conflictingRevs: string[];
+}
+
+/**
+ * Async host-supplied conflict resolver invoked when a replicated document has `_conflicts`.
+ */
+export type OnConflictHandler<T extends Record<string, unknown> = Record<string, unknown>> = (
+  conflict: ConflictContext<T>
+) => Promise<T>;
 
 /**
  * Signature for pluggable conflict resolution functions.

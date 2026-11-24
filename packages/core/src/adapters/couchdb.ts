@@ -2,7 +2,14 @@
 import type PouchDB from "pouchdb-browser";
 
 // --- Types ---
-import { CouchDBAdapterOptions, HerdDoc, HerdSyncStatus, PouchDBCtor, SyncAdapter } from "@/types";
+import {
+  CouchDBAdapterOptions,
+  DisconnectReason,
+  HerdDoc,
+  HerdSyncStatus,
+  PouchDBCtor,
+  SyncAdapter
+} from "@/types";
 
 /**
  * Internal shape to safely extract change replication metadata.
@@ -152,7 +159,24 @@ export class CouchDBAdapter<T extends HerdDoc = HerdDoc> implements SyncAdapter 
       });
   }
 
-  public async stop(): Promise<void> {
+  public async syncNow(): Promise<void> {
+    if (!this.options.remoteUrl || typeof window === "undefined") {
+      return;
+    }
+    if (!this.syncHandler || !this.remoteDb) {
+      await this.start();
+      return;
+    }
+    this.updateStatus({ state: "syncing", error: null });
+    await this.localDb.sync(this.remoteDb);
+    this.updateStatus({
+      state: "connected",
+      error: null,
+      lastSyncedAt: new Date().toISOString()
+    });
+  }
+
+  public async stop(reason?: DisconnectReason): Promise<void> {
     if (this.syncHandler) {
       this.syncHandler.cancel();
       this.syncHandler = null;
@@ -161,6 +185,10 @@ export class CouchDBAdapter<T extends HerdDoc = HerdDoc> implements SyncAdapter 
       await this.remoteDb.close();
       this.remoteDb = null;
     }
-    this.updateStatus({ state: "idle" });
+    if (reason) {
+      this.updateStatus({ state: "disconnected", disconnectReason: reason });
+    } else {
+      this.updateStatus({ state: "idle", disconnectReason: null });
+    }
   }
 }
