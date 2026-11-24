@@ -1,7 +1,15 @@
 "use client";
 
 // --- React ---
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 
 // --- Vendor ---
 import type PouchDB from "pouchdb-browser";
@@ -10,7 +18,20 @@ import type PouchDB from "pouchdb-browser";
 import { CouchDBAdapter } from "@/adapters/couchdb";
 
 // --- Types ---
-import { CouchDBAdapterOptions, HerdDoc, HerdSyncStatus, PouchDBCtor } from "@/types";
+import {
+  CouchDBAdapterOptions,
+  HerdDoc,
+  HerdSyncStatus,
+  PouchDBCtor,
+  SyncAdapter
+} from "@/types";
+
+const IDLE_PEER_STATUS: HerdSyncStatus = {
+  state: "idle",
+  lastSyncedAt: null,
+  pendingPushes: 0,
+  error: null
+};
 
 /**
  * React Context value shape for HerdSync.
@@ -19,6 +40,9 @@ export interface HerdSyncContextValue<T extends HerdDoc = HerdDoc> {
   db: PouchDB.Database<T> | null;
   status: HerdSyncStatus;
   adapter: CouchDBAdapter<T> | null;
+  peerAdapter: SyncAdapter | null;
+  peerStatus: HerdSyncStatus;
+  setPeerAdapter: (adapter: SyncAdapter | null) => void;
 }
 
 const HerdSyncContext = createContext<HerdSyncContextValue<HerdDoc> | null>(null);
@@ -26,8 +50,9 @@ const HerdSyncContext = createContext<HerdSyncContextValue<HerdDoc> | null>(null
 /**
  * Props for the HerdSyncProvider component.
  */
-export interface HerdSyncProviderProps extends CouchDBAdapterOptions {
+export interface HerdSyncProviderProps<T extends HerdDoc = HerdDoc> extends CouchDBAdapterOptions {
   name: string;
+  createPeerAdapter?: (db: PouchDB.Database<T>) => SyncAdapter;
   children: React.ReactNode;
 }
 
@@ -43,8 +68,9 @@ export function HerdSyncProvider<T extends HerdDoc = HerdDoc>({
   backOffMultiplier,
   initialBackOffMs,
   maxBackOffMs,
+  createPeerAdapter,
   children
-}: HerdSyncProviderProps) {
+}: HerdSyncProviderProps<T>) {
   const [db, setDb] = useState<PouchDB.Database<T> | null>(null);
   const [status, setStatus] = useState<HerdSyncStatus>({
     state: "uninitialized",
@@ -52,10 +78,33 @@ export function HerdSyncProvider<T extends HerdDoc = HerdDoc>({
     pendingPushes: 0,
     error: null
   });
+  const [peerAdapter, setPeerAdapterState] = useState<SyncAdapter | null>(null);
+  const [peerStatus, setPeerStatus] = useState<HerdSyncStatus>(IDLE_PEER_STATUS);
 
   const adapterRef = useRef<CouchDBAdapter<T> | null>(null);
   const activeDbRef = useRef<PouchDB.Database<T> | null>(null);
+  const peerAdapterRef = useRef<SyncAdapter | null>(null);
+  const peerUnsubscribeRef = useRef<(() => void) | null>(null);
+  const createPeerAdapterRef = useRef(createPeerAdapter);
+  createPeerAdapterRef.current = createPeerAdapter;
+
   const serializedAuth = JSON.stringify(auth);
+
+  const attachPeerAdapter = useCallback((nextAdapter: SyncAdapter | null) => {
+    if (peerUnsubscribeRef.current) {
+      peerUnsubscribeRef.current();
+      peerUnsubscribeRef.current = null;
+    }
+
+    peerAdapterRef.current = nextAdapter;
+    setPeerAdapterState(nextAdapter);
+
+    if (nextAdapter) {
+      peerUnsubscribeRef.current = nextAdapter.subscribe(setPeerStatus);
+    } else {
+      setPeerStatus(IDLE_PEER_STATUS);
+    }
+  }, []);
 
   useEffect(() => {
     let isDisposed = false;
@@ -86,9 +135,25 @@ export function HerdSyncProvider<T extends HerdDoc = HerdDoc>({
       const unsubscribe = adapter.subscribe(setStatus);
       void adapter.start();
 
+      if (createPeerAdapterRef.current) {
+        const createdPeer = createPeerAdapterRef.current(localDb);
+        attachPeerAdapter(createdPeer);
+        createdPeer.start();
+      }
+
       return () => {
         unsubscribe();
         void adapter.stop();
+        if (peerUnsubscribeRef.current) {
+          peerUnsubscribeRef.current();
+          peerUnsubscribeRef.current = null;
+        }
+        if (peerAdapterRef.current) {
+          void peerAdapterRef.current.stop();
+          peerAdapterRef.current = null;
+        }
+        setPeerAdapterState(null);
+        setPeerStatus(IDLE_PEER_STATUS);
         void localDb.close();
         adapterRef.current = null;
         activeDbRef.current = null;
@@ -112,16 +177,20 @@ export function HerdSyncProvider<T extends HerdDoc = HerdDoc>({
     retry,
     backOffMultiplier,
     initialBackOffMs,
-    maxBackOffMs
+    maxBackOffMs,
+    attachPeerAdapter
   ]);
 
   const contextValue = useMemo(
     (): HerdSyncContextValue<T> => ({
       db,
       status,
-      adapter: adapterRef.current
+      adapter: adapterRef.current,
+      peerAdapter,
+      peerStatus,
+      setPeerAdapter: attachPeerAdapter
     }),
-    [db, status]
+    [db, status, peerAdapter, peerStatus, attachPeerAdapter]
   );
 
   return (

@@ -3,9 +3,13 @@ import {
   buildMailtoHref,
   buildPairingUrl,
   buildSmsHref,
+  chunkPayload,
   compressSDP,
   decompressSDP,
-  extractPairingPayload
+  extractPairingPayload,
+  generatePairingPin,
+  parseQRChunk,
+  reassembleChunks
 } from "@/signaling/qr";
 
 describe("WebRTC QR Signaling SDP Compression", () => {
@@ -90,5 +94,40 @@ describe("WebRTC QR Signaling SDP Compression", () => {
     const sms = buildSmsHref(url);
     expect(sms.startsWith("sms:?body=")).toBe(true);
     expect(sms).toContain(encodeURIComponent(url));
+  });
+
+  it("should split large payloads into HS1 animated QR chunks and reassemble them in any order", () => {
+    const compressed = compressSDP(fullRealisticSdp);
+    const chunks = chunkPayload(compressed, 100);
+
+    expect(chunks.length).toBeGreaterThan(1);
+
+    const parsedMap = new Map<number, string>();
+    for (const frame of [...chunks].reverse()) {
+      const parsed = parseQRChunk(frame);
+      expect(parsed).not.toBeNull();
+      if (parsed) {
+        parsedMap.set(parsed.index, parsed.data);
+      }
+    }
+
+    const total = parseQRChunk(chunks[0] ?? "")?.total ?? 0;
+    const reassembled = reassembleChunks(parsedMap, total);
+    expect(reassembled).toBe(compressed);
+    expect(decompressSDP(reassembled ?? "")).toBe(fullRealisticSdp);
+  });
+
+  it("should keep short payloads as a single unchunked frame and reject incomplete chunk sets", () => {
+    const shortPayload = "abc123";
+    expect(chunkPayload(shortPayload, 160)).toEqual([shortPayload]);
+    expect(parseQRChunk(shortPayload)).toBeNull();
+
+    const partial = new Map<number, string>([[1, "part1"]]);
+    expect(reassembleChunks(partial, 2)).toBeNull();
+  });
+
+  it("should generate a 6-digit numeric pairing PIN", () => {
+    const pin = generatePairingPin();
+    expect(pin).toMatch(/^\d{6}$/);
   });
 });

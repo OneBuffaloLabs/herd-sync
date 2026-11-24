@@ -1,10 +1,10 @@
 "use client";
 
 // --- React ---
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 // --- WebRTC ---
-import { SyncModal, WebRTCAdapter } from "@onebuffalolabs/adapter-webrtc";
+import { SyncFloatingWidget, SyncModal, WebRTCAdapter } from "@onebuffalolabs/adapter-webrtc";
 
 // --- HerdSync ---
 import { HerdDoc, HerdSyncProvider, useHerdDoc, useHerdSync } from "@onebuffalolabs/herd-sync";
@@ -15,30 +15,20 @@ interface TaskDoc extends HerdDoc {
 }
 
 function PlaygroundInner() {
-  const { db, status } = useHerdSync();
+  const { status, peerAdapter, peerStatus } = useHerdSync();
   const { doc, save, loading } = useHerdDoc<TaskDoc>("test_task_1", {
     title: "Initial Local Task",
     completed: false
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [webrtcStatus, setWebrtcStatus] = useState("idle");
-  const webrtcAdapterRef = useRef<WebRTCAdapter | null>(null);
 
   useEffect(() => {
-    if (!db) return;
-    const adapter = new WebRTCAdapter(db);
-    webrtcAdapterRef.current = adapter;
-    const unsubscribe = adapter.subscribe((s) => setWebrtcStatus(s.state));
-
     if (typeof window !== "undefined" && window.location.hash.includes("pair=")) {
       setIsModalOpen(true);
     }
+  }, []);
 
-    return () => {
-      unsubscribe();
-      void adapter.stop();
-    };
-  }, [db]);
+  const webrtcAdapter = peerAdapter instanceof WebRTCAdapter ? peerAdapter : null;
 
   const handleToggle = (): void => {
     void save({
@@ -55,7 +45,7 @@ function PlaygroundInner() {
           <strong>CouchDB Sync State:</strong> {status.state}
         </p>
         <p>
-          <strong>WebRTC P2P State:</strong> {webrtcStatus}
+          <strong>WebRTC P2P State:</strong> {peerStatus.state}
         </p>
         <p>
           <strong>Pending Replications:</strong> {status.pendingPushes}
@@ -97,8 +87,12 @@ function PlaygroundInner() {
         )}
       </section>
 
-      {isModalOpen && webrtcAdapterRef.current && (
-        <SyncModal adapter={webrtcAdapterRef.current} onClose={() => setIsModalOpen(false)} />
+      {isModalOpen && webrtcAdapter && (
+        <SyncModal adapter={webrtcAdapter} onClose={() => setIsModalOpen(false)} />
+      )}
+
+      {!isModalOpen && webrtcAdapter && peerStatus.state !== "idle" && (
+        <SyncFloatingWidget status={peerStatus} onExpand={() => setIsModalOpen(true)} />
       )}
     </div>
   );
@@ -126,7 +120,11 @@ export default function Page() {
         />
       </div>
 
-      <HerdSyncProvider name="playground_tasks_db" remoteUrl={remoteUrl || undefined}>
+      <HerdSyncProvider
+        name="playground_tasks_db"
+        remoteUrl={remoteUrl || undefined}
+        createPeerAdapter={(db) => new WebRTCAdapter(db)}
+      >
         <PlaygroundInner />
       </HerdSyncProvider>
     </main>

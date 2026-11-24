@@ -27,6 +27,26 @@ describe("WebRTCAdapter Conflict Resolution & Ingestion", () => {
     expect(adapter.getStatus().state).toBe("idle");
   });
 
+  it("should persist, read, and clear saved peer metadata in localStorage", () => {
+    expect(adapter.getSavedPeer()).toBeNull();
+
+    // @ts-expect-error - testing private savePeerRecord helper
+    adapter.savePeerRecord("host", "peer-test-123");
+    const saved = adapter.getSavedPeer();
+    expect(saved).not.toBeNull();
+    expect(saved?.peerId).toBe("peer-test-123");
+    expect(saved?.role).toBe("host");
+
+    adapter.clearSavedPeer();
+    expect(adapter.getSavedPeer()).toBeNull();
+  });
+
+  it("should return false on reconnect when no saved peer exists", async () => {
+    adapter.clearSavedPeer();
+    const result = await adapter.reconnect();
+    expect(result).toBe(false);
+  });
+
   it("should preserve newer local revision when incoming doc has older updatedAt timestamp", async () => {
     const initialDoc: ItemDoc = {
       _id: "conflict_item",
